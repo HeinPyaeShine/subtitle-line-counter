@@ -55,12 +55,9 @@ const els = {
    Utilities
    ========================================= */
 function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&')
-    .replace(/</g, '<')
-    .replace(/>/g, '>')
-    .replace(/"/g, '"')
-    .replace(/'/g, ''');
+  const div = document.createElement('div');
+  div.textContent = String(str);
+  return div.innerHTML.replace(/"/g, '"');
 }
 
 function showToast(message, type = 'default') {
