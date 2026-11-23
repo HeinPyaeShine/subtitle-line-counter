@@ -22,7 +22,7 @@ function getInitialPlayer() {
   }
   let saved = (localStorage.getItem('hps_player_name') || '').trim();
   if (!saved) {
-    const entered = window.prompt('Enter your Player Name (e.g. HPS, Astral, Ryker):');
+    const entered = window.prompt('Enter your Player Name (e.g. HPS, Naing, Ryker):');
     saved = (entered && entered.trim()) ? entered.trim() : 'Guest';
     localStorage.setItem('hps_player_name', saved);
   }
@@ -636,3 +636,4 @@ if (shareBoardBtn) {
 
 // Start application
 initSupabase();
+
