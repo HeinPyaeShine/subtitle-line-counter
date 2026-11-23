@@ -228,3 +228,98 @@ export function parseBatchInput(inputString, existingRecords = []) {
 
   return { validRecords, errors };
 }
+
+/**
+ * Parses an uploaded .srt filename and its text content.
+ * Supports patterns like:
+ * - "Tank_Chair(105-156)_08.srt"
+ * - "Tank Chair E8(53-104).srt"
+ * - "Tank Chair Ep9(157-208).srt"
+ * - "Tank Chair Ep8.srt" (reads subtitle cue numbers inside the file)
+ */
+export function parseSrtFile(fileName, fileContent = '') {
+  const baseName = fileName
+    .replace(/\.srt$/i, '')
+    .replace(/_/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!baseName) {
+    return { valid: false, error: `"${fileName}" — Invalid file name.` };
+  }
+
+  let working = baseName;
+  let startLine = null;
+  let endLine = null;
+
+  // 1. Check for range in parentheses: e.g. (105-156)
+  const parenRange = working.match(/\((\d+)\s*[-–—]\s*(\d+)\)/);
+  if (parenRange) {
+    startLine = Number(parenRange[1]);
+    endLine = Number(parenRange[2]);
+    working = (working.slice(0, parenRange.index) + ' ' + working.slice(parenRange.index + parenRange[0].length))
+      .replace(/\s+/g, ' ')
+      .trim();
+  } else {
+    // 2. Check for standalone range in filename: e.g. Tank Chair E8 105-156
+    const plainRange = working.match(/(?:^|\s)(\d+)\s*[-–—]\s*(\d+)(?:\s|$)/);
+    if (plainRange) {
+      startLine = Number(plainRange[1]);
+      endLine = Number(plainRange[2]);
+      working = (working.slice(0, plainRange.index) + ' ' + working.slice(plainRange.index + plainRange[0].length))
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+  }
+
+  // 3. Fallback: read first and last subtitle block numbers from inside the .srt file
+  if (startLine === null || endLine === null) {
+    const cueMatches = [
+      ...String(fileContent).matchAll(/(?:^|\n)\s*(\d+)\s*\r?\n\d{2}:\d{2}:\d{2}[,.]\d{3}\s*-->/g)
+    ];
+    if (cueMatches.length > 0) {
+      startLine = Number(cueMatches[0][1]);
+      endLine = Number(cueMatches[cueMatches.length - 1][1]);
+    } else {
+      return {
+        valid: false,
+        error: `"${fileName}" — Could not find a line range in the filename or valid SRT subtitle numbers inside the file.`
+      };
+    }
+  }
+
+  // 4. Extract episode tag (E8, Ep9, S1E8, Ch4) or trailing episode number (_08 => Ep8)
+  let episode = '';
+  const explicitEp = working.match(/(?:^|\s)((?:s\d+\s*e\d+)|(?:(?:episode|ep|e|ch|chapter)\.?\s*\d+))(?:\s|$)/i);
+
+  if (explicitEp) {
+    episode = formatEpisodeToken(explicitEp[1].replace(/\./g, ''));
+    working = (working.slice(0, explicitEp.index) + ' ' + working.slice(explicitEp.index + explicitEp[0].length))
+      .replace(/\s+/g, ' ')
+      .trim();
+  } else {
+    const trailingNum = working.match(/\s+(\d{1,4})$/);
+    if (trailingNum) {
+      episode = `Ep${Number(trailingNum[1])}`;
+      working = working.slice(0, trailingNum.index).trim();
+    }
+  }
+
+  const cleanTitle = working.replace(/^[\s\-_]+|[\s\-_]+$/g, '');
+  if (!cleanTitle) {
+    return { valid: false, error: `"${fileName}" — Could not detect the series name from the file.` };
+  }
+
+  const validation = validateRecordFields({
+    projectName: formatTitleCase(cleanTitle),
+    episode,
+    startLine,
+    endLine
+  });
+
+  if (!validation.valid) {
+    return { valid: false, error: `"${fileName}" — ${validation.error}` };
+  }
+
+  return validation;
+}
