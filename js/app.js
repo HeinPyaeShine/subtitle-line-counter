@@ -164,7 +164,7 @@ function subscribeToRealtime() {
       if (status === 'SUBSCRIBED') {
         setSyncStatus('online', 'Live Sync');
       } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-        setSyncStatus('error', 'Reconnecting...');
+        setSyncStatus('error', 'Reconnecting...(Need VPN)');
       }
     });
 }
