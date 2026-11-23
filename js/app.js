@@ -12,24 +12,23 @@ let supabaseClient = null;
 let records = [];
 let realtimeChannel = null;
 
-// Separate board per player
-function getInitialPlayer() {
+// Separate board per user
+function getInitialUserState() {
   const params = new URLSearchParams(window.location.search);
-  const urlPlayer = (params.get('user') || '').trim();
-  if (urlPlayer) {
-    localStorage.setItem('hps_player_name', urlPlayer);
-    return urlPlayer;
+  const urlUser = (params.get('user') || '').trim();
+  if (urlUser) {
+    localStorage.setItem('hps_player_name', urlUser);
+    return { name: urlUser, isNewVisitor: false };
   }
-  let saved = (localStorage.getItem('hps_player_name') || '').trim();
-  if (!saved) {
-    const entered = window.prompt('Enter your Player Name (e.g. HPS, Naing, Ryker):');
-    saved = (entered && entered.trim()) ? entered.trim() : 'Guest';
-    localStorage.setItem('hps_player_name', saved);
+  const saved = (localStorage.getItem('hps_player_name') || '').trim();
+  if (saved) {
+    return { name: saved, isNewVisitor: false };
   }
-  return saved;
+  return { name: 'HPS', isNewVisitor: true };
 }
 
-let currentPlayer = getInitialPlayer();
+const initialUserState = getInitialUserState();
+let currentPlayer = initialUserState.name;
 
 // DOM Elements
 const els = {
@@ -602,24 +601,128 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Player Board Switcher & Share Link
+// Custom User Board Modal & Share Link
 const playerBadge = document.getElementById('currentPlayerBadge');
 const switchPlayerBtn = document.getElementById('switchPlayerBtn');
 const shareBoardBtn = document.getElementById('shareBoardBtn');
+const userModal = document.getElementById('userModal');
+const userForm = document.getElementById('userForm');
+const userNameInput = document.getElementById('userNameInput');
+const userError = document.getElementById('userError');
+const recentUsersSection = document.getElementById('recentUsersSection');
+const recentUsersList = document.getElementById('recentUsersList');
+const closeUserModalBtn = document.getElementById('closeUserModal');
+const cancelUserBtn = document.getElementById('cancelUserBtn');
 
+function getRecentUsers() {
+  try {
+    const raw = JSON.parse(localStorage.getItem('hps_recent_users') || '[]');
+    return Array.isArray(raw) ? raw : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRecentUser(name) {
+  const list = getRecentUsers().filter((u) => u.toLowerCase() !== name.toLowerCase());
+  list.unshift(name);
+  localStorage.setItem('hps_recent_users', JSON.stringify(list.slice(0, 8)));
+}
+
+saveRecentUser(currentPlayer);
 if (playerBadge) playerBadge.textContent = currentPlayer;
 
+function renderRecentUserChips() {
+  if (!recentUsersList || !recentUsersSection) return;
+  const recent = getRecentUsers();
+  if (recent.length === 0) {
+    recentUsersSection.classList.add('hidden');
+    return;
+  }
+  recentUsersSection.classList.remove('hidden');
+  recentUsersList.innerHTML = recent
+    .map((name) => {
+      const isCurrent = name.toLowerCase() === currentPlayer.toLowerCase();
+      return `<button type="button" class="user-chip ${isCurrent ? 'is-active' : ''}" data-user="${escapeHtml(name)}">${escapeHtml(name)}</button>`;
+    })
+    .join('');
+}
+
+function openUserModal(isFirstVisit = false) {
+  if (!userModal || !userNameInput) return;
+  userError.classList.add('hidden');
+  userNameInput.value = isFirstVisit ? '' : currentPlayer;
+  renderRecentUserChips();
+  userModal.classList.remove('hidden');
+  setTimeout(() => {
+    userNameInput.focus();
+    if (!isFirstVisit) userNameInput.select();
+  }, 30);
+}
+
+function closeUserModal() {
+  if (userModal) userModal.classList.add('hidden');
+}
+
+async function switchToUserBoard(rawName) {
+  const cleanName = rawName.trim();
+  if (!cleanName) {
+    userError.textContent = 'Please enter a user name.';
+    userError.classList.remove('hidden');
+    userNameInput.focus();
+    return;
+  }
+
+  currentPlayer = cleanName;
+  localStorage.setItem('hps_player_name', cleanName);
+  saveRecentUser(cleanName);
+  if (playerBadge) playerBadge.textContent = cleanName;
+
+  const url = new URL(window.location.href);
+  url.searchParams.set('user', cleanName);
+  window.history.replaceState({}, '', url.toString());
+
+  closeUserModal();
+  records = [];
+  els.loadingState.classList.remove('hidden');
+  els.tableWrapper.classList.add('hidden');
+  els.emptyState.classList.add('hidden');
+
+  await fetchRecords();
+  showToast(`Opened ${cleanName}'s board`, 'success');
+}
+
 if (switchPlayerBtn) {
-  switchPlayerBtn.addEventListener('click', () => {
-    const next = window.prompt('Enter Player Name to open their board:', currentPlayer);
-    if (!next || !next.trim()) return;
-    const cleanName = next.trim();
-    localStorage.setItem('hps_player_name', cleanName);
-    const url = new URL(window.location.href);
-    url.searchParams.set('user', cleanName);
-    window.location.href = url.toString();
+  switchPlayerBtn.addEventListener('click', () => openUserModal(false));
+}
+
+if (userForm) {
+  userForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    switchToUserBoard(userNameInput.value);
   });
 }
+
+if (recentUsersList) {
+  recentUsersList.addEventListener('click', (e) => {
+    const chip = e.target.closest('.user-chip');
+    if (chip && chip.dataset.user) {
+      switchToUserBoard(chip.dataset.user);
+    }
+  });
+}
+
+if (closeUserModalBtn) closeUserModalBtn.addEventListener('click', closeUserModal);
+if (cancelUserBtn) cancelUserBtn.addEventListener('click', closeUserModal);
+if (userModal) {
+  userModal.addEventListener('click', (e) => {
+    if (e.target === userModal) closeUserModal();
+  });
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeUserModal();
+});
 
 if (shareBoardBtn) {
   shareBoardBtn.addEventListener('click', async () => {
@@ -629,11 +732,15 @@ if (shareBoardBtn) {
       await navigator.clipboard.writeText(url.toString());
       showToast(`Copied link for ${currentPlayer}!`, 'success');
     } catch {
-      window.prompt('Copy your board link:', url.toString());
+      showToast(`Link: ${url.toString()}`, 'default');
     }
   });
 }
 
 // Start application
 initSupabase();
+if (initialUserState.isNewVisitor) {
+  openUserModal(true);
+}
+
 
