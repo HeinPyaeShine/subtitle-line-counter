@@ -228,7 +228,93 @@
   <!-- Supabase JS v2 CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Application Modules -->
+
+  <!-- Custom Switch User Modal -->
+    <style>
+      #userModal {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.55);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        z-index: 1000;
+      }
+      #userModal.hidden {
+        display: none !important;
+      }
+      .user-modal-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        width: 100%;
+        max-width: 420px;
+        padding: 22px;
+        box-shadow: 0 20px 35px -10px rgba(15, 23, 42, 0.25);
+        animation: modalPop 0.16s ease-out;
+      }
+      @keyframes modalPop {
+        from { opacity: 0; transform: scale(0.96) translateY(6px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+      }
+      .user-chip {
+        background: #f1f5f9;
+        color: #0f172a;
+        border: 1px solid #e2e8f0;
+        border-radius: 999px;
+        padding: 5px 12px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .user-chip:hover {
+        background: #e2e8f0;
+      }
+      .user-chip.is-active {
+        background: #dcfce7;
+        color: #15803d;
+        border-color: #86efac;
+      }
+    </style>
+
+    <div id="userModal" class="hidden" role="dialog" aria-modal="true" aria-labelledby="userModalTitle">
+      <div class="user-modal-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <h2 id="userModalTitle" style="margin:0;font-size:18px;font-weight:700;color:#0f172a;">Switch User Board</h2>
+          <button type="button" id="closeUserModal" aria-label="Close" style="background:none;border:none;font-size:22px;line-height:1;color:#64748b;cursor:pointer;padding:4px;">×</button>
+        </div>
+        <p style="margin:0 0 16px;font-size:13.5px;color:#64748b;">Enter a user name to open their separate subtitle board and line counter.</p>
+
+        <form id="userForm" novalidate>
+          <label for="userNameInput" style="display:block;font-size:13px;font-weight:600;color:#334155;margin-bottom:6px;">User Name</label>
+          <input
+            type="text"
+            id="userNameInput"
+            class="text-input"
+            placeholder="e.g. HPS, Astral, Ryker"
+            maxlength="30"
+            autocomplete="off"
+            style="width:100%;margin-bottom:10px;"
+          />
+          <div id="userError" class="hidden" style="color:#dc2626;font-size:13px;margin-bottom:10px;"></div>
+
+          <div id="recentUsersSection" class="hidden" style="margin-bottom:16px;">
+            <div style="font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;">Recent Boards</div>
+            <div id="recentUsersList" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:8px;">
+            <button type="button" id="cancelUserBtn" class="btn btn-secondary">Cancel</button>
+            <button type="submit" class="btn btn-primary">Open Board</button>
+          </div>
+        </form>
+      </div>
+    </div>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
+
 
