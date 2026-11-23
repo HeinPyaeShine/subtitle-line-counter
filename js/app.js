@@ -197,7 +197,7 @@ function renderRecords() {
 
       return `
         <tr data-id="${escapeHtml(rec.id)}">
-          <td data-label="Project">
+          <td data-label="Series">
             <span class="project-name">${escapeHtml(rec.project_name)}</span>
           </td>
           <td data-label="Episode">${epDisplay}</td>
