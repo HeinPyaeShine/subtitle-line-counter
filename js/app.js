@@ -12,6 +12,25 @@ let supabaseClient = null;
 let records = [];
 let realtimeChannel = null;
 
+// Separate board per player
+function getInitialPlayer() {
+  const params = new URLSearchParams(window.location.search);
+  const urlPlayer = (params.get('user') || '').trim();
+  if (urlPlayer) {
+    localStorage.setItem('hps_player_name', urlPlayer);
+    return urlPlayer;
+  }
+  let saved = (localStorage.getItem('hps_player_name') || '').trim();
+  if (!saved) {
+    const entered = window.prompt('Enter your Player Name (e.g. HPS, Astral, Ryker):');
+    saved = (entered && entered.trim()) ? entered.trim() : 'Guest';
+    localStorage.setItem('hps_player_name', saved);
+  }
+  return saved;
+}
+
+let currentPlayer = getInitialPlayer();
+
 // DOM Elements
 const els = {
   syncStatus: document.getElementById('syncStatus'),
@@ -128,6 +147,7 @@ async function fetchRecords() {
   const { data, error } = await supabaseClient
     .from('subtitle_records')
     .select('*')
+    .eq('owner', currentPlayer)
     .order('created_at', { ascending: true });
 
   els.loadingState.classList.add('hidden');
@@ -155,8 +175,9 @@ function subscribeToRealtime() {
     .on(
       'postgres_changes',
       { event: '*', schema: 'public', table: 'subtitle_records' },
-      () => {
-        // Re-fetch authoritative sorted list to safely handle simultaneous multi-user updates
+      (payload) => {
+        if (payload.new?.owner && payload.new.owner !== currentPlayer) return;
+        // Re-fetch authoritative sorted list for the active player's board
         fetchRecords();
       }
     )
@@ -244,7 +265,7 @@ async function handleAddSubmit(event) {
 
   const { data, error } = await supabaseClient
     .from('subtitle_records')
-    .insert(validRecords)
+    .insert(validRecords.map((r) => ({ ...r, owner: currentPlayer })))
     .select();
 
   els.addBtn.disabled = false;
@@ -256,7 +277,6 @@ async function handleAddSubmit(event) {
   }
 
   if (data && data.length > 0) {
-    // Avoid duplicates if Realtime already appended them
     const existingIds = new Set(records.map((r) => r.id));
     data.forEach((item) => {
       if (!existingIds.has(item.id)) records.push(item);
@@ -321,7 +341,6 @@ async function handleEditSubmit(event) {
     return;
   }
 
-  // Prevent editing into an exact duplicate of another record
   const newKey = buildDuplicateKey(validation.record);
   const isDuplicate = records.some((r) => r.id !== id && buildDuplicateKey(r) === newKey);
   if (isDuplicate) {
@@ -335,6 +354,7 @@ async function handleEditSubmit(event) {
   const { data, error } = await supabaseClient
     .from('subtitle_records')
     .update(validation.record)
+    .eq('owner', currentPlayer)
     .eq('id', id)
     .select()
     .single();
@@ -363,6 +383,7 @@ async function handleDeleteSingle(id) {
   const { error } = await supabaseClient
     .from('subtitle_records')
     .delete()
+    .eq('owner', currentPlayer)
     .eq('id', id);
 
   if (error) {
@@ -390,10 +411,11 @@ async function handleRemoveAll() {
   if (!supabaseClient) return;
   els.confirmRemoveAllBtn.disabled = true;
 
-  // Supabase requires a filter condition for delete operations
+  // Only remove records belonging to the active player's board
   const { error } = await supabaseClient
     .from('subtitle_records')
     .delete()
+    .eq('owner', currentPlayer)
     .not('id', 'is', null);
 
   els.confirmRemoveAllBtn.disabled = false;
@@ -463,7 +485,7 @@ function handleExportTxt() {
 }
 
 /* =========================================
-   Event Listeners & Boot
+   SRT Upload & Event Listeners
    ========================================= */
 async function handleSrtFilesSelected(event) {
   const files = Array.from(event.target.files || []);
@@ -509,7 +531,7 @@ async function handleSrtFilesSelected(event) {
   if (validRecords.length > 0) {
     const { data, error } = await supabaseClient
       .from('subtitle_records')
-      .insert(validRecords)
+      .insert(validRecords.map((r) => ({ ...r, owner: currentPlayer })))
       .select();
 
     if (error) {
@@ -579,6 +601,38 @@ document.addEventListener('keydown', (e) => {
     closeConfirmModal();
   }
 });
+
+// Player Board Switcher & Share Link
+const playerBadge = document.getElementById('currentPlayerBadge');
+const switchPlayerBtn = document.getElementById('switchPlayerBtn');
+const shareBoardBtn = document.getElementById('shareBoardBtn');
+
+if (playerBadge) playerBadge.textContent = currentPlayer;
+
+if (switchPlayerBtn) {
+  switchPlayerBtn.addEventListener('click', () => {
+    const next = window.prompt('Enter Player Name to open their board:', currentPlayer);
+    if (!next || !next.trim()) return;
+    const cleanName = next.trim();
+    localStorage.setItem('hps_player_name', cleanName);
+    const url = new URL(window.location.href);
+    url.searchParams.set('user', cleanName);
+    window.location.href = url.toString();
+  });
+}
+
+if (shareBoardBtn) {
+  shareBoardBtn.addEventListener('click', async () => {
+    const url = new URL(window.location.origin + window.location.pathname);
+    url.searchParams.set('user', currentPlayer);
+    try {
+      await navigator.clipboard.writeText(url.toString());
+      showToast(`Copied link for ${currentPlayer}!`, 'success');
+    } catch {
+      window.prompt('Copy your board link:', url.toString());
+    }
+  });
+}
 
 // Start application
 initSupabase();
