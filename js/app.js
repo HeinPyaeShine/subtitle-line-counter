@@ -3,6 +3,7 @@ import {
   calculateInclusiveLines,
   formatRecordLine,
   parseBatchInput,
+  parseSrtFile,
   validateRecordFields
 } from './parser.js';
 
@@ -20,6 +21,8 @@ const els = {
   recordForm: document.getElementById('recordForm'),
   batchInput: document.getElementById('batchInput'),
   addBtn: document.getElementById('addBtn'),
+  srtFileInput: document.getElementById('srtFileInput'),
+  uploadSrtBtn: document.getElementById('uploadSrtBtn'),
   formError: document.getElementById('formError'),
   copyListBtn: document.getElementById('copyListBtn'),
   exportTxtBtn: document.getElementById('exportTxtBtn'),
@@ -462,6 +465,76 @@ function handleExportTxt() {
 /* =========================================
    Event Listeners & Boot
    ========================================= */
+async function handleSrtFilesSelected(event) {
+  const files = Array.from(event.target.files || []);
+  event.target.value = '';
+  if (files.length === 0) return;
+
+  showFormError([]);
+  if (!supabaseClient) {
+    showFormError(['Database connection is not ready yet.']);
+    return;
+  }
+
+  els.uploadSrtBtn.disabled = true;
+
+  const existingKeys = new Set(records.map(buildDuplicateKey));
+  const batchKeys = new Set();
+  const validRecords = [];
+  const errors = [];
+
+  for (const file of files) {
+    const content = await file.text();
+    const result = parseSrtFile(file.name, content);
+
+    if (!result.valid) {
+      errors.push(result.error);
+      continue;
+    }
+
+    const key = buildDuplicateKey(result.record);
+    if (existingKeys.has(key)) {
+      errors.push(`Duplicate skipped: "${formatRecordLine(result.record)}" already exists.`);
+      continue;
+    }
+    if (batchKeys.has(key)) {
+      errors.push(`Duplicate file skipped: "${file.name}".`);
+      continue;
+    }
+
+    batchKeys.add(key);
+    validRecords.push(result.record);
+  }
+
+  if (validRecords.length > 0) {
+    const { data, error } = await supabaseClient
+      .from('subtitle_records')
+      .insert(validRecords)
+      .select();
+
+    if (error) {
+      console.error('SRT insert error:', error);
+      errors.push('Failed to save uploaded SRT records. Please try again.');
+    } else if (data && data.length > 0) {
+      const existingIds = new Set(records.map((r) => r.id));
+      data.forEach((item) => {
+        if (!existingIds.has(item.id)) records.push(item);
+      });
+      renderRecords();
+      const label = data.length === 1 ? '1 SRT file added.' : `${data.length} SRT files added.`;
+      showToast(label, 'success');
+    }
+  }
+
+  if (errors.length > 0) {
+    showFormError(errors);
+  }
+
+  els.uploadSrtBtn.disabled = false;
+}
+
+els.uploadSrtBtn.addEventListener('click', () => els.srtFileInput.click());
+els.srtFileInput.addEventListener('change', handleSrtFilesSelected);
 els.recordForm.addEventListener('submit', handleAddSubmit);
 els.copyListBtn.addEventListener('click', handleCopyList);
 els.exportTxtBtn.addEventListener('click', handleExportTxt);
