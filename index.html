@@ -31,7 +31,17 @@
         <span class="sync-text">Connecting....(Need VPN)</span>
       </div>
     </header>
-
+<!-- Player Board Switcher -->
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;padding:12px 16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:13px;font-weight:600;color:#64748b;">Users Board:</span>
+          <span id="currentPlayerBadge" style="font-size:14px;font-weight:700;color:#0f172a;background:#f1f5f9;padding:4px 10px;border-radius:8px;">HPS</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button type="button" id="switchPlayerBtn" class="btn btn-secondary" style="padding:6px 12px;font-size:13px;">Switch User</button>
+          <button type="button" id="shareBoardBtn" class="btn btn-secondary" style="padding:6px 12px;font-size:13px;">Share My Link</button>
+        </div>
+      </div>
     <!-- Grand Total Banner (Always Prominent) -->
     <section class="summary-grid" aria-label="Totals Summary">
       <div class="summary-card summary-card--primary">
@@ -221,3 +231,4 @@
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
+
