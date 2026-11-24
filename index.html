@@ -320,93 +320,334 @@
         </form>
       </div>
     </div>
-  <!-- Settings Modal -->
- <style>
-   body.lang-my {
-     font-family: 'Pyidaungsu', 'Noto Sans Myanmar', system-ui, -apple-system, sans-serif;
-     line-height: 1.55;
-   }
-   #settingsModal {
-     position: fixed;
-     inset: 0;
-     background: rgba(15, 23, 42, 0.55);
-     backdrop-filter: blur(4px);
-     display: flex;
-     align-items: center;
-     justify-content: center;
-     padding: 16px;
-     z-index: 1000;
-   }
-   #settingsModal.hidden {
-     display: none !important;
-   }
-   .lang-option-grid {
-     display: grid;
-     grid-template-columns: 1fr 1fr;
-     gap: 10px;
-     margin-top: 8px;
-   }
-   .lang-option-btn {
-     display: flex;
-     flex-direction: column;
-     align-items: flex-start;
-     gap: 2px;
-     padding: 12px 14px;
-     border-radius: 12px;
-     border: 1.5px solid #e2e8f0;
-     background: #f8fafc;
-     color: #0f172a;
-     cursor: pointer;
-     text-align: left;
-     transition: all 0.15s ease;
-   }
-   .lang-option-btn:hover {
-     border-color: #cbd5e1;
-     background: #f1f5f9;
-   }
-   .lang-option-btn.is-selected {
-     border-color: #16a34a;
-     background: #f0fdf4;
-     box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
-   }
-   .lang-option-title {
-     font-size: 14px;
-     font-weight: 700;
-     color: #0f172a;
-   }
-   .lang-option-sub {
-     font-size: 12px;
-     color: #64748b;
-   }
- </style>
+ <!-- Settings Modal & Dark Theme Styles -->
+    <style>
+      body.lang-my {
+        font-family: 'Pyidaungsu', 'Noto Sans Myanmar', system-ui, -apple-system, sans-serif;
+        line-height: 1.55;
+      }
+      #settingsModal {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.55);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        z-index: 1000;
+      }
+      #settingsModal.hidden {
+        display: none !important;
+      }
+      .settings-option-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 8px;
+      }
+      .settings-option-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 3px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1.5px solid #e2e8f0;
+        background: #f8fafc;
+        color: #0f172a;
+        cursor: pointer;
+        text-align: left;
+        transition: all 0.15s ease;
+      }
+      .settings-option-btn:hover {
+        border-color: #cbd5e1;
+        background: #f1f5f9;
+      }
+      .settings-option-btn.is-selected {
+        border-color: #16a34a;
+        background: #f0fdf4;
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.14);
+      }
+      .settings-option-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #0f172a;
+      }
+      .settings-option-sub {
+        font-size: 12px;
+        color: #64748b;
+      }
 
- <div id="settingsModal" class="hidden" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
-   <div class="user-modal-card">
-     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-       <h2 id="settingsModalTitle" style="margin:0;font-size:18px;font-weight:700;color:#0f172a;">Settings</h2>
-       <button type="button" id="closeSettingsModal" aria-label="Close" style="background:none;border:none;font-size:22px;line-height:1;color:#64748b;cursor:pointer;padding:4px;">×</button>
-     </div>
-     <p id="settingsModalDesc" style="margin:0 0 16px;font-size:13.5px;color:#64748b;">Customize your Subtitle Line Counter preferences.</p>
+      /* =========================================
+         Professional Dark Slate Theme
+         ========================================= */
+      body.theme-dark {
+        --bg-page: #0b1120;
+        --bg-surface: #1e293b;
+        --bg-card: #1e293b;
+        --bg-subtle: #0f172a;
+        --text-primary: #f8fafc;
+        --text-secondary: #cbd5e1;
+        --text-muted: #94a3b8;
+        --border-color: #334155;
+        background-color: #0b1120 !important;
+        color: #f8fafc !important;
+      }
 
-     <div style="margin-bottom:18px;">
-       <div id="settingsLangLabel" style="font-size:13px;font-weight:600;color:#334155;">Language / ဘာသာစကား</div>
-       <div class="lang-option-grid">
-         <button type="button" id="langEnBtn" class="lang-option-btn is-selected" data-lang="en">
-           <span class="lang-option-title">English</span>
-           <span class="lang-option-sub">Default interface</span>
-         </button>
-         <button type="button" id="langMyBtn" class="lang-option-btn" data-lang="my">
-           <span class="lang-option-title">မြန်မာ (Burmese)</span>
-           <span class="lang-option-sub">မြန်မာဘာသာ အသုံးပြုရန်</span>
-         </button>
-       </div>
-     </div>
+      body.theme-dark header h1,
+      body.theme-dark h1,
+      body.theme-dark h2,
+      body.theme-dark h3,
+      body.theme-dark .field-label,
+      body.theme-dark .project-name {
+        color: #f8fafc !important;
+      }
 
-     <div style="display:flex;justify-content:flex-end;">
-       <button type="button" id="doneSettingsBtn" class="btn btn-primary">Done</button>
-     </div>
-   </div>
- </div>
+      body.theme-dark header p,
+      body.theme-dark .field-hint,
+      body.theme-dark .helper-note {
+        color: #94a3b8 !important;
+      }
+
+      body.theme-dark .helper-note code,
+      body.theme-dark code {
+        background: #0f172a !important;
+        color: #e2e8f0 !important;
+        border: 1px solid #334155 !important;
+      }
+
+      /* Cards, User Board Bar & Modals */
+      body.theme-dark .card,
+      body.theme-dark .summary-card:not(.summary-card--primary),
+      body.theme-dark div:has(> div > #currentPlayerBadge),
+      body.theme-dark .user-modal-card,
+      body.theme-dark .modal-card,
+      body.theme-dark .modal-content,
+      body.theme-dark .modal-dialog {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+        color: #f8fafc !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.45) !important;
+      }
+
+      body.theme-dark .summary-card:not(.summary-card--primary) .summary-label {
+        color: #94a3b8 !important;
+      }
+
+      body.theme-dark .summary-card:not(.summary-card--primary) .summary-value {
+        color: #f8fafc !important;
+      }
+
+      body.theme-dark #currentPlayerBadge {
+        background: #0f172a !important;
+        color: #4ade80 !important;
+        border: 1px solid #334155;
+      }
+
+      body.theme-dark div:has(> #currentPlayerBadge) > span:first-child {
+        color: #94a3b8 !important;
+      }
+
+      /* Sync Pill */
+      body.theme-dark #syncStatus {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+        color: #cbd5e1 !important;
+      }
+
+      /* Inputs & Secondary Buttons */
+      body.theme-dark .text-input,
+      body.theme-dark input[type="text"],
+      body.theme-dark input[type="number"] {
+        background: #0f172a !important;
+        border-color: #334155 !important;
+        color: #f8fafc !important;
+      }
+
+      body.theme-dark .text-input::placeholder,
+      body.theme-dark input::placeholder {
+        color: #64748b !important;
+      }
+
+      body.theme-dark .text-input:focus,
+      body.theme-dark input:focus {
+        border-color: #22c55e !important;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18) !important;
+      }
+
+      body.theme-dark .btn-secondary {
+        background: #0f172a !important;
+        border-color: #334155 !important;
+        color: #e2e8f0 !important;
+      }
+
+      body.theme-dark .btn-secondary:hover:not(:disabled) {
+        background: #273549 !important;
+        border-color: #475569 !important;
+      }
+
+      body.theme-dark .btn-danger-outline {
+        background: rgba(239, 68, 68, 0.1) !important;
+        border-color: rgba(239, 68, 68, 0.35) !important;
+        color: #fca5a5 !important;
+      }
+
+      body.theme-dark .btn-danger-outline:hover:not(:disabled) {
+        background: rgba(239, 68, 68, 0.2) !important;
+      }
+
+      /* Table & Badges */
+      body.theme-dark table thead th {
+        background: #0f172a !important;
+        color: #94a3b8 !important;
+        border-bottom-color: #334155 !important;
+      }
+
+      body.theme-dark table tbody tr {
+        border-bottom-color: #334155 !important;
+      }
+
+      body.theme-dark table tbody tr:hover {
+        background: rgba(15, 23, 42, 0.55) !important;
+      }
+
+      body.theme-dark table td {
+        color: #e2e8f0 !important;
+        border-color: #334155 !important;
+      }
+
+      body.theme-dark .ep-badge {
+        background: #0f172a !important;
+        color: #cbd5e1 !important;
+        border: 1px solid #334155;
+      }
+
+      body.theme-dark .lines-pill {
+        background: rgba(34, 197, 94, 0.16) !important;
+        color: #4ade80 !important;
+      }
+
+      /* Modal Text, Chips & Settings Options */
+      body.theme-dark #userModalTitle,
+      body.theme-dark #settingsModalTitle,
+      body.theme-dark label[for="userNameInput"],
+      body.theme-dark #settingsThemeLabel,
+      body.theme-dark #settingsLangLabel {
+        color: #f8fafc !important;
+      }
+
+      body.theme-dark #userModal p,
+      body.theme-dark #settingsModalDesc,
+      body.theme-dark #recentUsersSection > div:first-child {
+        color: #94a3b8 !important;
+      }
+
+      body.theme-dark .user-chip {
+        background: #0f172a !important;
+        border-color: #334155 !important;
+        color: #cbd5e1 !important;
+      }
+
+      body.theme-dark .user-chip:hover {
+        background: #273549 !important;
+      }
+
+      body.theme-dark .user-chip.is-active {
+        background: rgba(34, 197, 94, 0.16) !important;
+        border-color: rgba(74, 222, 128, 0.45) !important;
+        color: #4ade80 !important;
+      }
+
+      body.theme-dark .settings-option-btn {
+        background: #0f172a !important;
+        border-color: #334155 !important;
+        color: #f8fafc !important;
+      }
+
+      body.theme-dark .settings-option-btn:hover {
+        background: #273549 !important;
+        border-color: #475569 !important;
+      }
+
+      body.theme-dark .settings-option-btn.is-selected {
+        background: rgba(34, 197, 94, 0.14) !important;
+        border-color: #22c55e !important;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18) !important;
+      }
+
+      body.theme-dark .settings-option-header {
+        color: #f8fafc !important;
+      }
+
+      body.theme-dark .settings-option-sub {
+        color: #94a3b8 !important;
+      }
+
+      body.theme-dark .toast {
+        background: #0f172a !important;
+        border: 1px solid #334155 !important;
+        color: #f8fafc !important;
+      }
+    </style>
+
+    <div id="settingsModal" class="hidden" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
+      <div class="user-modal-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <h2 id="settingsModalTitle" style="margin:0;font-size:18px;font-weight:700;color:#0f172a;">Settings</h2>
+          <button type="button" id="closeSettingsModal" aria-label="Close" style="background:none;border:none;font-size:22px;line-height:1;color:#64748b;cursor:pointer;padding:4px;">×</button>
+        </div>
+        <p id="settingsModalDesc" style="margin:0 0 16px;font-size:13.5px;color:#64748b;">Customize your Subtitle Line Counter preferences.</p>
+
+        <!-- Appearance / Theme -->
+        <div style="margin-bottom:16px;">
+          <div id="settingsThemeLabel" style="font-size:13px;font-weight:600;color:#334155;">Appearance</div>
+          <div class="settings-option-grid">
+            <button type="button" id="themeLightBtn" class="settings-option-btn is-selected" data-theme="light">
+              <span class="settings-option-header">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="4" />
+                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                </svg>
+                <span id="themeLightTitle">Light Mode</span>
+              </span>
+              <span id="themeLightSub" class="settings-option-sub">Clean bright cards</span>
+            </button>
+            <button type="button" id="themeDarkBtn" class="settings-option-btn" data-theme="dark">
+              <span class="settings-option-header">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                </svg>
+                <span id="themeDarkTitle">Dark Mode</span>
+              </span>
+              <span id="themeDarkSub" class="settings-option-sub">Easy on eyes at night</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Language -->
+        <div style="margin-bottom:18px;">
+          <div id="settingsLangLabel" style="font-size:13px;font-weight:600;color:#334155;">Language / ဘာသာစကား</div>
+          <div class="settings-option-grid">
+            <button type="button" id="langEnBtn" class="settings-option-btn is-selected" data-lang="en">
+              <span class="settings-option-header">English</span>
+              <span class="settings-option-sub">Default interface</span>
+            </button>
+            <button type="button" id="langMyBtn" class="settings-option-btn" data-lang="my">
+              <span class="settings-option-header">မြန်မာ (Burmese)</span>
+              <span class="settings-option-sub">မြန်မာဘာသာ အသုံးပြုရန်</span>
+            </button>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;">
+          <button type="button" id="doneSettingsBtn" class="btn btn-primary">Done</button>
+        </div>
+      </div>
+    </div>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
