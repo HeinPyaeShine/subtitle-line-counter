@@ -11,6 +11,150 @@ import {
 let supabaseClient = null;
 let records = [];
 let realtimeChannel = null;
+let currentSyncState = 'connecting';
+let currentLang = localStorage.getItem('hps_app_lang') === 'my' ? 'my' : 'en';
+
+// Translations (English & Burmese)
+const TRANSLATIONS = {
+  en: {
+    appSubtitle: 'Shared subtitle range calculator & project tracker by HeinPyaeShine',
+    syncConnecting: 'Connecting...',
+    syncOnline: 'Live Sync',
+    syncError: 'Connection Error',
+    syncFailed: 'Sync Failed',
+    syncReconnecting: 'Reconnecting...(Need VPN)',
+    usersBoard: 'Users Board:',
+    switchUser: 'Switch User',
+    shareMyLink: 'Share My Link',
+    settings: 'Settings',
+    totalLinesLabel: 'TOTAL SUBTITLE LINES',
+    savedRecordsLabel: 'SAVED RECORDS',
+    addRecordsHeading: 'Add Subtitle Records',
+    addRecordsHint: "Separate multiple entries with commas ','",
+    batchPlaceholder: 'e.g. Tank Chair Ep7 1-52, etc...',
+    addRecordsBtn: 'Add Records',
+    uploadSrtBtn: 'Upload .SRT',
+    helperNoteHtml:
+      'Inclusive count supported automatically (e.g. <code>1-52 = 52</code>, <code>131-195 = 65</code>, <code>96-40 = 57</code>). Press <code>Add Records</code> or <code>Upload .SRT</code> to submit.',
+    recordsHeading: 'Subtitle Records',
+    copyListBtn: 'COPY LIST',
+    exportTxtBtn: 'Export TXT',
+    removeAllBtn: 'Remove All',
+    thSeries: 'Series',
+    thEpisode: 'Episode',
+    thStart: 'Start',
+    thEnd: 'End',
+    thTotalLines: 'Total Lines',
+    thActions: 'Actions',
+    editBtn: 'Edit',
+    deleteBtn: 'Delete',
+    userModalTitle: 'Switch User Board',
+    userModalDesc: 'Enter a user name to open their separate subtitle board and line counter.',
+    userNameLabel: 'User Name',
+    userNamePlaceholder: 'e.g. HPS, Astral, Ryker',
+    recentBoards: 'Recent Boards',
+    cancelBtn: 'Cancel',
+    openBoardBtn: 'Open Board',
+    settingsTitle: 'Settings',
+    settingsDesc: 'Customize your Subtitle Line Counter preferences.',
+    settingsLangLabel: 'Language / ဘာသာစကား',
+    doneBtn: 'Done',
+    editModalTitle: 'Edit Record',
+    saveChangesBtn: 'Save Changes',
+    confirmModalTitle: 'Remove All Records?',
+    confirmRemoveBtn: 'Yes, Remove All',
+    dbNotReady: 'Database connection is not ready yet.',
+    saveFailed: 'Failed to save records. Please try again.',
+    srtSaveFailed: 'Failed to save uploaded SRT records. Please try again.',
+    loadFailed: 'Failed to load records from database.',
+    deleteFailed: 'Failed to delete record.',
+    removeAllFailed: 'Failed to remove all records.',
+    updateFailed: 'Failed to update record. Please try again.',
+    recordDeleted: 'Record deleted.',
+    recordUpdated: 'Record updated.',
+    allRemoved: 'All records removed.',
+    listCopied: 'Subtitle list copied to clipboard!',
+    copyFailed: 'Could not copy to clipboard.',
+    txtDownloaded: 'TXT file downloaded.',
+    enterUserError: 'Please enter a user name.',
+    recordsAdded: (n) => (n === 1 ? '1 record added.' : `${n} records added.`),
+    srtAdded: (n) => (n === 1 ? '1 SRT file added.' : `${n} SRT files added.`),
+    openedBoard: (name) => `Opened ${name}'s board`,
+    copiedLink: (name) => `Copied link for ${name}!`
+  },
+  my: {
+    appSubtitle: 'စာတန်းထိုး လိုင်းအရေအတွက် တွက်ချက်မှုနှင့် မှတ်တမ်းစနစ် (by HeinPyaeShine)',
+    syncConnecting: 'ချိတ်ဆက်နေသည်...',
+    syncOnline: 'တိုက်ရိုက်ချိတ်ဆက်ပြီး',
+    syncError: 'ချိတ်ဆက်မှု မအောင်မြင်ပါ',
+    syncFailed: 'ဒေတာရယူမှု မအောင်မြင်ပါ',
+    syncReconnecting: 'ပြန်လည်ချိတ်ဆက်နေသည်... (VPN လိုအပ်ပါသည်)',
+    usersBoard: 'အသုံးပြုသူ ဘုတ်:',
+    switchUser: 'အသုံးပြုသူ ပြောင်းရန်',
+    shareMyLink: 'လင့်ခ် ကူးယူရန်',
+    settings: 'ဆက်တင်',
+    totalLinesLabel: 'စုစုပေါင်း စာတန်းလိုင်း',
+    savedRecordsLabel: 'သိမ်းဆည်းထားသော မှတ်တမ်း',
+    addRecordsHeading: 'စာတန်းထိုး မှတ်တမ်းအသစ် ထည့်ရန်',
+    addRecordsHint: "တစ်ခုထက်ပိုပါက ကော်မာ ',' ခံ၍ ရေးပါ",
+    batchPlaceholder: 'ဥပမာ - Tank Chair Ep7 1-52 စသည်ဖြင့်...',
+    addRecordsBtn: 'မှတ်တမ်းထည့်မည်',
+    uploadSrtBtn: '.SRT ဖိုင်တင်မည်',
+    helperNoteHtml:
+      'အစ-အဆုံး လိုင်းအရေအတွက်ကို အလိုအလျောက် တွက်ချက်ပေးပါသည် (ဥပမာ <code>1-52 = 52</code>, <code>131-195 = 65</code>, <code>96-40 = 57</code>)။ ထည့်သွင်းရန် <code>မှတ်တမ်းထည့်မည်</code> သို့မဟုတ် <code>.SRT ဖိုင်တင်မည်</code> ကို နှိပ်ပါ။',
+    recordsHeading: 'စာတန်းထိုး မှတ်တမ်းများ',
+    copyListBtn: 'စာရင်းကူးယူမည်',
+    exportTxtBtn: 'TXT ဖိုင်ထုတ်မည်',
+    removeAllBtn: 'အားလုံးဖျက်မည်',
+    thSeries: 'ဇာတ်လမ်းအမည်',
+    thEpisode: 'အပိုင်း',
+    thStart: 'အစ',
+    thEnd: 'အဆုံး',
+    thTotalLines: 'စုစုပေါင်းလိုင်း',
+    thActions: 'လုပ်ဆောင်ချက်',
+    editBtn: 'ပြင်ဆင်မည်',
+    deleteBtn: 'ဖျက်မည်',
+    userModalTitle: 'အသုံးပြုသူ ဘုတ် ပြောင်းရန်',
+    userModalDesc: 'သီးခြား စာတန်းထိုး မှတ်တမ်းဘုတ် ဖွင့်ရန် အသုံးပြုသူအမည် ထည့်ပါ။',
+    userNameLabel: 'အသုံးပြုသူ အမည်',
+    userNamePlaceholder: 'ဥပမာ - HPS, Astral, Ryker',
+    recentBoards: 'မကြာသေးမီက ဖွင့်ခဲ့သော ဘုတ်များ',
+    cancelBtn: 'မလုပ်တော့ပါ',
+    openBoardBtn: 'ဘုတ်ဖွင့်မည်',
+    settingsTitle: 'ဆက်တင်များ',
+    settingsDesc: 'Subtitle Line Counter အသုံးပြုမှု ပုံစံကို စိတ်ကြိုက်ပြင်ဆင်ပါ။',
+    settingsLangLabel: 'Language / ဘာသာစကား',
+    doneBtn: 'ပြီးပါပြီ',
+    editModalTitle: 'မှတ်တမ်း ပြင်ဆင်ရန်',
+    saveChangesBtn: 'ပြင်ဆင်မှု သိမ်းမည်',
+    confirmModalTitle: 'မှတ်တမ်းအားလုံး ဖျက်မည်လား?',
+    confirmRemoveBtn: 'အားလုံးဖျက်မည်',
+    dbNotReady: 'ဒေတာဘေ့စ် ချိတ်ဆက်မှု အဆင်သင့်မဖြစ်သေးပါ။',
+    saveFailed: 'မှတ်တမ်းသိမ်းဆည်းမှု မအောင်မြင်ပါ။ ထပ်မံကြိုးစားပါ။',
+    srtSaveFailed: 'SRT ဖိုင် သိမ်းဆည်းမှု မအောင်မြင်ပါ။ ထပ်မံကြိုးစားပါ။',
+    loadFailed: 'ဒေတာဘေ့စ်မှ မှတ်တမ်းများ ရယူ၍မရပါ။',
+    deleteFailed: 'မှတ်တမ်းဖျက်မှု မအောင်မြင်ပါ။',
+    removeAllFailed: 'မှတ်တမ်းအားလုံး ဖျက်မှု မအောင်မြင်ပါ။',
+    updateFailed: 'မှတ်တမ်းပြင်ဆင်မှု မအောင်မြင်ပါ။ ထပ်မံကြိုးစားပါ။',
+    recordDeleted: 'မှတ်တမ်း ဖျက်ပြီးပါပြီ။',
+    recordUpdated: 'မှတ်တမ်း ပြင်ဆင်ပြီးပါပြီ။',
+    allRemoved: 'မှတ်တမ်းအားလုံး ဖျက်ပြီးပါပြီ။',
+    listCopied: 'စာတန်းထိုး စာရင်းကို ကူးယူပြီးပါပြီ!',
+    copyFailed: 'စာရင်းကူးယူ၍ မရပါ။',
+    txtDownloaded: 'TXT ဖိုင် ဒေါင်းလုဒ်ဆွဲပြီးပါပြီ။',
+    enterUserError: 'အသုံးပြုသူ အမည် ထည့်သွင်းပါ။',
+    recordsAdded: (n) => (n === 1 ? 'မှတ်တမ်း ၁ ခု ထည့်ပြီးပါပြီ။' : `မှတ်တမ်း ${n} ခု ထည့်ပြီးပါပြီ။`),
+    srtAdded: (n) => (n === 1 ? 'SRT ဖိုင် ၁ ဖိုင် ထည့်ပြီးပါပြီ။' : `SRT ဖိုင် ${n} ဖိုင် ထည့်ပြီးပါပြီ။`),
+    openedBoard: (name) => `${name} ၏ ဘုတ်ကို ဖွင့်လိုက်ပါပြီ`,
+    copiedLink: (name) => `${name} အတွက် လင့်ခ် ကူးယူပြီးပါပြီ!`
+  }
+};
+
+function t(key, arg) {
+  const dict = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
+  const val = dict[key] !== undefined ? dict[key] : TRANSLATIONS.en[key];
+  return typeof val === 'function' ? val(arg) : val;
+}
 
 // Separate board per user
 function getInitialUserState() {
@@ -73,7 +217,7 @@ const els = {
 };
 
 /* =========================================
-   Utilities
+   Utilities & Language Switcher
    ========================================= */
 function escapeHtml(str) {
   const div = document.createElement('div');
@@ -94,11 +238,126 @@ function showToast(message, type = 'default') {
   }, 3000);
 }
 
-function setSyncStatus(state, label) {
+function setSyncStatus(state, labelKey) {
+  currentSyncState = state;
   els.syncStatus.classList.remove('is-online', 'is-error');
   if (state === 'online') els.syncStatus.classList.add('is-online');
   if (state === 'error') els.syncStatus.classList.add('is-error');
-  els.syncText.textContent = label;
+  els.syncText.textContent = t(labelKey);
+}
+
+function applyLanguage(lang) {
+  currentLang = lang === 'my' ? 'my' : 'en';
+  localStorage.setItem('hps_app_lang', currentLang);
+  document.documentElement.lang = currentLang;
+  document.body.classList.toggle('lang-my', currentLang === 'my');
+
+  // Header subtitle & sync status
+  const subtitleEl = document.querySelector('header p, .brand-subtitle, .app-subtitle');
+  if (subtitleEl) subtitleEl.textContent = t('appSubtitle');
+
+  if (currentSyncState === 'online') els.syncText.textContent = t('syncOnline');
+  else if (currentSyncState === 'error') els.syncText.textContent = t('syncError');
+  else if (currentSyncState === 'reconnecting') els.syncText.textContent = t('syncReconnecting');
+  else els.syncText.textContent = t('syncConnecting');
+
+  // User Board Bar
+  const badgeEl = document.getElementById('currentPlayerBadge');
+  if (badgeEl && badgeEl.previousElementSibling) {
+    badgeEl.previousElementSibling.textContent = t('usersBoard');
+  }
+  const switchBtnEl = document.getElementById('switchPlayerBtn');
+  if (switchBtnEl) switchBtnEl.textContent = t('switchUser');
+  const shareBtnEl = document.getElementById('shareBoardBtn');
+  if (shareBtnEl) shareBtnEl.textContent = t('shareMyLink');
+  const settingsBtnTextEl = document.getElementById('settingsBtnText');
+  if (settingsBtnTextEl) settingsBtnTextEl.textContent = t('settings');
+
+  // Summary Cards
+  const summaryLabels = document.querySelectorAll('.summary-label');
+  if (summaryLabels[0]) summaryLabels[0].textContent = t('totalLinesLabel');
+  if (summaryLabels[1]) summaryLabels[1].textContent = t('savedRecordsLabel');
+
+  // Add Records Form
+  const fieldLabel = document.querySelector('label[for="batchInput"]');
+  if (fieldLabel && fieldLabel.firstChild) {
+    fieldLabel.firstChild.textContent = t('addRecordsHeading') + ' ';
+  }
+  const fieldHint = document.querySelector('.field-hint');
+  if (fieldHint) fieldHint.textContent = t('addRecordsHint');
+  if (els.batchInput) els.batchInput.placeholder = t('batchPlaceholder');
+
+  const addBtnSpan = els.addBtn?.querySelector('span');
+  if (addBtnSpan) addBtnSpan.textContent = t('addRecordsBtn');
+  const uploadBtnSpan = els.uploadSrtBtn?.querySelector('span');
+  if (uploadBtnSpan) uploadBtnSpan.textContent = t('uploadSrtBtn');
+
+  const helperNote = document.querySelector('.helper-note');
+  if (helperNote) helperNote.innerHTML = t('helperNoteHtml');
+
+  // Records Section & Table Headers
+  const recordsSectionHeading = document.querySelector('.records-section h2, .card:last-of-type h2');
+  if (recordsSectionHeading && recordsSectionHeading.id !== 'userModalTitle' && recordsSectionHeading.id !== 'settingsModalTitle') {
+    recordsSectionHeading.textContent = t('recordsHeading');
+  }
+
+  const copySpan = els.copyListBtn?.querySelector('span');
+  if (copySpan) copySpan.textContent = t('copyListBtn');
+  else if (els.copyListBtn) els.copyListBtn.textContent = t('copyListBtn');
+
+  const exportSpan = els.exportTxtBtn?.querySelector('span');
+  if (exportSpan) exportSpan.textContent = t('exportTxtBtn');
+  else if (els.exportTxtBtn) els.exportTxtBtn.textContent = t('exportTxtBtn');
+
+  const removeSpan = els.removeAllBtn?.querySelector('span');
+  if (removeSpan) removeSpan.textContent = t('removeAllBtn');
+  else if (els.removeAllBtn) els.removeAllBtn.textContent = t('removeAllBtn');
+
+  const ths = document.querySelectorAll('#tableWrapper thead th');
+  const thKeys = ['thSeries', 'thEpisode', 'thStart', 'thEnd', 'thTotalLines', 'thActions'];
+  ths.forEach((th, idx) => {
+    if (thKeys[idx]) th.textContent = t(thKeys[idx]);
+  });
+
+  // Switch User Modal
+  const uTitle = document.getElementById('userModalTitle');
+  if (uTitle) uTitle.textContent = t('userModalTitle');
+  const uDesc = uTitle?.parentElement?.nextElementSibling;
+  if (uDesc && uDesc.tagName === 'P') uDesc.textContent = t('userModalDesc');
+  const uLabel = document.querySelector('label[for="userNameInput"]');
+  if (uLabel) uLabel.textContent = t('userNameLabel');
+  const uInput = document.getElementById('userNameInput');
+  if (uInput) uInput.placeholder = t('userNamePlaceholder');
+  const recentLabel = document.querySelector('#recentUsersSection > div:first-child');
+  if (recentLabel) recentLabel.textContent = t('recentBoards');
+  const cancelUserEl = document.getElementById('cancelUserBtn');
+  if (cancelUserEl) cancelUserEl.textContent = t('cancelBtn');
+  const openBoardEl = document.querySelector('#userForm button[type="submit"]');
+  if (openBoardEl) openBoardEl.textContent = t('openBoardBtn');
+
+  // Edit & Confirm Modals
+  if (els.cancelEditBtn) els.cancelEditBtn.textContent = t('cancelBtn');
+  if (els.saveEditBtn) els.saveEditBtn.textContent = t('saveChangesBtn');
+  if (els.cancelRemoveAllBtn) els.cancelRemoveAllBtn.textContent = t('cancelBtn');
+  if (els.confirmRemoveAllBtn) els.confirmRemoveAllBtn.textContent = t('confirmRemoveBtn');
+
+  // Settings Modal
+  const sTitle = document.getElementById('settingsModalTitle');
+  if (sTitle) sTitle.textContent = t('settingsTitle');
+  const sDesc = document.getElementById('settingsModalDesc');
+  if (sDesc) sDesc.textContent = t('settingsDesc');
+  const sLangLabel = document.getElementById('settingsLangLabel');
+  if (sLangLabel) sLangLabel.textContent = t('settingsLangLabel');
+  const sDoneBtn = document.getElementById('doneSettingsBtn');
+  if (sDoneBtn) sDoneBtn.textContent = t('doneBtn');
+
+  document.getElementById('langEnBtn')?.classList.toggle('is-selected', currentLang === 'en');
+  document.getElementById('langMyBtn')?.classList.toggle('is-selected', currentLang === 'my');
+
+  // Re-render rows to update Edit / Delete button labels
+  if (records.length > 0) {
+    renderRecords();
+  }
 }
 
 function showFormError(messages) {
@@ -132,7 +391,7 @@ async function initSupabase() {
     subscribeToRealtime();
   } catch (err) {
     console.error('Initialization failed:', err);
-    setSyncStatus('error', 'Connection Error');
+    setSyncStatus('error', 'syncError');
     els.loadingState.classList.add('hidden');
     showFormError([
       'Could not connect to Supabase. Make sure SUPABASE_URL and SUPABASE_ANON_KEY are configured in Vercel.'
@@ -153,8 +412,8 @@ async function fetchRecords() {
 
   if (error) {
     console.error('Fetch error:', error);
-    setSyncStatus('error', 'Sync Failed');
-    showToast('Failed to load records from database.', 'error');
+    setSyncStatus('error', 'syncFailed');
+    showToast(t('loadFailed'), 'error');
     return;
   }
 
@@ -176,15 +435,17 @@ function subscribeToRealtime() {
       { event: '*', schema: 'public', table: 'subtitle_records' },
       (payload) => {
         if (payload.new?.owner && payload.new.owner !== currentPlayer) return;
-        // Re-fetch authoritative sorted list for the active player's board
         fetchRecords();
       }
     )
     .subscribe((status) => {
       if (status === 'SUBSCRIBED') {
-        setSyncStatus('online', 'Live Sync');
+        setSyncStatus('online', 'syncOnline');
       } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-        setSyncStatus('error', 'Reconnecting...(Need VPN)');
+        currentSyncState = 'reconnecting';
+        els.syncStatus.classList.remove('is-online');
+        els.syncStatus.classList.add('is-error');
+        els.syncText.textContent = t('syncReconnecting');
       }
     });
 }
@@ -220,19 +481,19 @@ function renderRecords() {
 
       return `
         <tr data-id="${escapeHtml(rec.id)}">
-          <td data-label="Series">
+          <td data-label="${escapeHtml(t('thSeries'))}">
             <span class="project-name">${escapeHtml(rec.project_name)}</span>
           </td>
-          <td data-label="Episode">${epDisplay}</td>
-          <td data-label="Start" class="num-col">${Number(rec.start_line).toLocaleString()}</td>
-          <td data-label="End" class="num-col">${Number(rec.end_line).toLocaleString()}</td>
-          <td data-label="Total Lines" class="num-col">
+          <td data-label="${escapeHtml(t('thEpisode'))}">${epDisplay}</td>
+          <td data-label="${escapeHtml(t('thStart'))}" class="num-col">${Number(rec.start_line).toLocaleString()}</td>
+          <td data-label="${escapeHtml(t('thEnd'))}" class="num-col">${Number(rec.end_line).toLocaleString()}</td>
+          <td data-label="${escapeHtml(t('thTotalLines'))}" class="num-col">
             <span class="lines-pill">${Number(rec.total_lines).toLocaleString()}</span>
           </td>
-          <td data-label="Actions" class="actions-col">
+          <td data-label="${escapeHtml(t('thActions'))}" class="actions-col">
             <div class="row-actions">
-              <button type="button" class="btn btn-secondary btn-sm edit-btn" data-id="${escapeHtml(rec.id)}">Edit</button>
-              <button type="button" class="btn btn-danger-outline btn-sm delete-btn" data-id="${escapeHtml(rec.id)}">Delete</button>
+              <button type="button" class="btn btn-secondary btn-sm edit-btn" data-id="${escapeHtml(rec.id)}">${escapeHtml(t('editBtn'))}</button>
+              <button type="button" class="btn btn-danger-outline btn-sm delete-btn" data-id="${escapeHtml(rec.id)}">${escapeHtml(t('deleteBtn'))}</button>
             </div>
           </td>
         </tr>
@@ -249,7 +510,7 @@ async function handleAddSubmit(event) {
   showFormError([]);
 
   if (!supabaseClient) {
-    showFormError(['Database connection is not ready yet.']);
+    showFormError([t('dbNotReady')]);
     return;
   }
 
@@ -271,7 +532,7 @@ async function handleAddSubmit(event) {
 
   if (error) {
     console.error('Insert error:', error);
-    showFormError(['Failed to save records. Please try again.']);
+    showFormError([t('saveFailed')]);
     return;
   }
 
@@ -285,8 +546,7 @@ async function handleAddSubmit(event) {
 
   els.batchInput.value = '';
   els.batchInput.focus();
-  const label = validRecords.length === 1 ? '1 record added.' : `${validRecords.length} records added.`;
-  showToast(label, 'success');
+  showToast(t('recordsAdded', validRecords.length), 'success');
 }
 
 /* =========================================
@@ -362,7 +622,7 @@ async function handleEditSubmit(event) {
 
   if (error) {
     console.error('Update error:', error);
-    els.editError.textContent = 'Failed to update record. Please try again.';
+    els.editError.textContent = t('updateFailed');
     els.editError.classList.remove('hidden');
     return;
   }
@@ -370,7 +630,7 @@ async function handleEditSubmit(event) {
   records = records.map((r) => (r.id === id ? data : r));
   renderRecords();
   closeEditModal();
-  showToast('Record updated.', 'success');
+  showToast(t('recordUpdated'), 'success');
 }
 
 /* =========================================
@@ -387,13 +647,13 @@ async function handleDeleteSingle(id) {
 
   if (error) {
     console.error('Delete error:', error);
-    showToast('Failed to delete record.', 'error');
+    showToast(t('deleteFailed'), 'error');
     return;
   }
 
   records = records.filter((r) => r.id !== id);
   renderRecords();
-  showToast('Record deleted.', 'success');
+  showToast(t('recordDeleted'), 'success');
 }
 
 function openConfirmModal() {
@@ -410,7 +670,6 @@ async function handleRemoveAll() {
   if (!supabaseClient) return;
   els.confirmRemoveAllBtn.disabled = true;
 
-  // Only remove records belonging to the active player's board
   const { error } = await supabaseClient
     .from('subtitle_records')
     .delete()
@@ -421,14 +680,14 @@ async function handleRemoveAll() {
 
   if (error) {
     console.error('Remove all error:', error);
-    showToast('Failed to remove all records.', 'error');
+    showToast(t('removeAllFailed'), 'error');
     return;
   }
 
   records = [];
   renderRecords();
   closeConfirmModal();
-  showToast('All records removed.', 'success');
+  showToast(t('allRemoved'), 'success');
 }
 
 /* =========================================
@@ -457,10 +716,10 @@ async function handleCopyList() {
       document.execCommand('copy');
       tempArea.remove();
     }
-    showToast('Subtitle list copied to clipboard!', 'success');
+    showToast(t('listCopied'), 'success');
   } catch (err) {
     console.error('Clipboard copy error:', err);
-    showToast('Could not copy to clipboard.', 'error');
+    showToast(t('copyFailed'), 'error');
   }
 }
 
@@ -480,7 +739,7 @@ function handleExportTxt() {
   link.remove();
   URL.revokeObjectURL(url);
 
-  showToast('TXT file downloaded.', 'success');
+  showToast(t('txtDownloaded'), 'success');
 }
 
 /* =========================================
@@ -493,7 +752,7 @@ async function handleSrtFilesSelected(event) {
 
   showFormError([]);
   if (!supabaseClient) {
-    showFormError(['Database connection is not ready yet.']);
+    showFormError([t('dbNotReady')]);
     return;
   }
 
@@ -535,15 +794,14 @@ async function handleSrtFilesSelected(event) {
 
     if (error) {
       console.error('SRT insert error:', error);
-      errors.push('Failed to save uploaded SRT records. Please try again.');
+      errors.push(t('srtSaveFailed'));
     } else if (data && data.length > 0) {
       const existingIds = new Set(records.map((r) => r.id));
       data.forEach((item) => {
         if (!existingIds.has(item.id)) records.push(item);
       });
       renderRecords();
-      const label = data.length === 1 ? '1 SRT file added.' : `${data.length} SRT files added.`;
-      showToast(label, 'success');
+      showToast(t('srtAdded', data.length), 'success');
     }
   }
 
@@ -591,14 +849,6 @@ els.closeConfirmModal.addEventListener('click', closeConfirmModal);
 els.cancelRemoveAllBtn.addEventListener('click', closeConfirmModal);
 els.confirmModal.addEventListener('click', (e) => {
   if (e.target === els.confirmModal) closeConfirmModal();
-});
-
-// Close modals on Escape key
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    closeEditModal();
-    closeConfirmModal();
-  }
 });
 
 // Custom User Board Modal & Share Link
@@ -667,7 +917,7 @@ function closeUserModal() {
 async function switchToUserBoard(rawName) {
   const cleanName = rawName.trim();
   if (!cleanName) {
-    userError.textContent = 'Please enter a user name.';
+    userError.textContent = t('enterUserError');
     userError.classList.remove('hidden');
     userNameInput.focus();
     return;
@@ -689,7 +939,7 @@ async function switchToUserBoard(rawName) {
   els.emptyState.classList.add('hidden');
 
   await fetchRecords();
-  showToast(`Opened ${cleanName}'s board`, 'success');
+  showToast(t('openedBoard', cleanName), 'success');
 }
 
 if (switchPlayerBtn) {
@@ -720,27 +970,64 @@ if (userModal) {
   });
 }
 
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeUserModal();
-});
-
 if (shareBoardBtn) {
   shareBoardBtn.addEventListener('click', async () => {
     const url = new URL(window.location.origin + window.location.pathname);
     url.searchParams.set('user', currentPlayer);
     try {
       await navigator.clipboard.writeText(url.toString());
-      showToast(`Copied link for ${currentPlayer}!`, 'success');
+      showToast(t('copiedLink', currentPlayer), 'success');
     } catch {
       showToast(`Link: ${url.toString()}`, 'default');
     }
   });
 }
 
-// Start application
+// Settings Modal Events
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsModal = document.getElementById('settingsModal');
+const closeSettingsModalBtn = document.getElementById('closeSettingsModal');
+const doneSettingsBtn = document.getElementById('doneSettingsBtn');
+const langEnBtn = document.getElementById('langEnBtn');
+const langMyBtn = document.getElementById('langMyBtn');
+
+function openSettingsModal() {
+  if (settingsModal) settingsModal.classList.remove('hidden');
+}
+
+function closeSettingsModal() {
+  if (settingsModal) settingsModal.classList.add('hidden');
+}
+
+if (settingsBtn) settingsBtn.addEventListener('click', openSettingsModal);
+if (closeSettingsModalBtn) closeSettingsModalBtn.addEventListener('click', closeSettingsModal);
+if (doneSettingsBtn) doneSettingsBtn.addEventListener('click', closeSettingsModal);
+if (settingsModal) {
+  settingsModal.addEventListener('click', (e) => {
+    if (e.target === settingsModal) closeSettingsModal();
+  });
+}
+
+if (langEnBtn) {
+  langEnBtn.addEventListener('click', () => applyLanguage('en'));
+}
+if (langMyBtn) {
+  langMyBtn.addEventListener('click', () => applyLanguage('my'));
+}
+
+// Close all modals on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeEditModal();
+    closeConfirmModal();
+    closeUserModal();
+    closeSettingsModal();
+  }
+});
+
+// Apply saved language & start application
+applyLanguage(currentLang);
 initSupabase();
 if (initialUserState.isNewVisitor) {
   openUserModal(true);
 }
-
-
