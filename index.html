@@ -343,6 +343,10 @@
       #settingsModal.hidden {
         display: none !important;
       }
+      #settingsModal .user-modal-card {
+        max-height: 88vh;
+        overflow-y: auto;
+      }
       .settings-option-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -385,6 +389,58 @@
         color: #64748b;
       }
 
+      /* SRT Splitter Sub-Panel inside Settings */
+      #srtSplitterPanel {
+        margin-top: 12px;
+        padding: 14px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+      }
+      #srtSplitterPanel.hidden {
+        display: none !important;
+      }
+      .split-input-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .split-preset-pill {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+        border-radius: 999px;
+        padding: 3px 10px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .split-preset-pill:hover {
+        background: #f1f5f9;
+        border-color: #94a3b8;
+      }
+      .split-preset-pill.is-active {
+        background: #dcfce7;
+        color: #15803d;
+        border-color: #86efac;
+      }
+      #splitOutputText {
+        margin: 8px 0 0;
+        padding: 12px 14px;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 13.5px;
+        line-height: 1.65;
+        color: #0f172a;
+        max-height: 210px;
+        overflow-y: auto;
+        white-space: pre;
+        user-select: all;
+      }
+
       /* =========================================
          Professional Dark Slate Theme
          ========================================= */
@@ -423,7 +479,6 @@
         border: 1px solid #334155 !important;
       }
 
-      /* Cards, User Board Bar & Modals */
       body.theme-dark .card,
       body.theme-dark .summary-card:not(.summary-card--primary),
       body.theme-dark div:has(> div > #currentPlayerBadge),
@@ -455,14 +510,12 @@
         color: #94a3b8 !important;
       }
 
-      /* Sync Pill */
       body.theme-dark #syncStatus {
         background: #1e293b !important;
         border-color: #334155 !important;
         color: #cbd5e1 !important;
       }
 
-      /* Inputs & Secondary Buttons */
       body.theme-dark .text-input,
       body.theme-dark input[type="text"],
       body.theme-dark input[type="number"] {
@@ -503,7 +556,6 @@
         background: rgba(239, 68, 68, 0.2) !important;
       }
 
-      /* Table & Badges */
       body.theme-dark table thead th {
         background: #0f172a !important;
         color: #94a3b8 !important;
@@ -534,33 +586,62 @@
         color: #4ade80 !important;
       }
 
-      /* Modal Text, Chips & Settings Options */
       body.theme-dark #userModalTitle,
       body.theme-dark #settingsModalTitle,
       body.theme-dark label[for="userNameInput"],
       body.theme-dark #settingsThemeLabel,
-      body.theme-dark #settingsLangLabel {
+      body.theme-dark #settingsLangLabel,
+      body.theme-dark #settingsSrtLabel,
+      body.theme-dark #settingsRecentLabel,
+      body.theme-dark #splitTotalLabel,
+      body.theme-dark #splitTranslatorsLabel {
         color: #f8fafc !important;
       }
 
       body.theme-dark #userModal p,
       body.theme-dark #settingsModalDesc,
       body.theme-dark #recentBoardsLabel,
-      body.theme-dark #settingsRecentDesc {
+      body.theme-dark #settingsSrtDesc,
+      body.theme-dark #settingsRecentDesc,
+      body.theme-dark #splitSummaryBadge {
         color: #94a3b8 !important;
       }
 
-      body.theme-dark #settingsRecentLabel {
-        color: #f8fafc !important;
-      }
-
+      body.theme-dark #settingsSrtSection,
       body.theme-dark #settingsRecentRow {
         border-top-color: #334155 !important;
       }
 
+      body.theme-dark #srtSplitterPanel {
+        background: #0f172a !important;
+        border-color: #334155 !important;
+      }
+
+      body.theme-dark .split-preset-pill {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+        color: #cbd5e1 !important;
+      }
+
+      body.theme-dark .split-preset-pill:hover {
+        background: #273549 !important;
+      }
+
+      body.theme-dark .split-preset-pill.is-active {
+        background: rgba(34, 197, 94, 0.16) !important;
+        border-color: rgba(74, 222, 128, 0.45) !important;
+        color: #4ade80 !important;
+      }
+
+      body.theme-dark #splitOutputText {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+        color: #f8fafc !important;
+      }
+
       body.theme-dark #clearRecentUsersBtn {
         color: #fca5a5 !important;
-      }<div style="display:flex;
+      }
 
       body.theme-dark .user-chip {
         background: #0f172a !important;
@@ -645,7 +726,7 @@
         </div>
 
         <!-- Language -->
-        <div style="margin-bottom:18px;">
+        <div style="margin-bottom:16px;">
           <div id="settingsLangLabel" style="font-size:13px;font-weight:600;color:#334155;">Language / ဘာသာစကား</div>
           <div class="settings-option-grid">
             <button type="button" id="langEnBtn" class="settings-option-btn is-selected" data-lang="en">
@@ -658,7 +739,87 @@
             </button>
           </div>
         </div>
-<!-- Recent Boards Reset -->
+
+        <!-- Admin Tool: SRT File Line Splitter -->
+        <div id="settingsSrtSection" style="margin-bottom:16px;padding-top:14px;border-top:1px solid #e2e8f0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <div>
+              <div id="settingsSrtLabel" style="font-size:13px;font-weight:600;color:#334155;">SRT File Line Splitter</div>
+              <div id="settingsSrtDesc" style="font-size:12px;color:#64748b;">Divide movie lines equally for translators</div>
+            </div>
+            <button type="button" id="toggleSrtSplitterBtn" class="btn btn-secondary btn-sm" style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="8" y1="13" x2="16" y2="13" />
+                <line x1="8" y1="17" x2="16" y2="17" />
+              </svg>
+              <span id="toggleSrtSplitterText">SRT File</span>
+            </button>
+          </div>
+
+          <div id="srtSplitterPanel" class="hidden">
+            <div class="split-input-grid" style="margin-bottom:10px;">
+              <div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+                  <label id="splitTotalLabel" for="splitTotalLinesInput" style="font-size:12px;font-weight:600;color:#334155;">Total Lines</label>
+                  <button type="button" id="splitLoadSrtBtn" style="background:none;border:none;padding:0;font-size:11.5px;font-weight:600;color:#16a34a;cursor:pointer;">From .SRT</button>
+                  <input type="file" id="splitLoadSrtInput" accept=".srt" class="hidden" />
+                </div>
+                <input
+                  type="number"
+                  id="splitTotalLinesInput"
+                  class="text-input"
+                  min="1"
+                  max="100000"
+                  placeholder="e.g. 540"
+                  style="width:100%;padding:8px 10px;font-size:13.5px;"
+                />
+              </div>
+
+              <div>
+                <label id="splitTranslatorsLabel" for="splitTranslatorsInput" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:5px;">Translators (1–20)</label>
+                <input
+                  type="number"
+                  id="splitTranslatorsInput"
+                  class="text-input"
+                  min="1"
+                  max="20"
+                  placeholder="e.g. 4"
+                  style="width:100%;padding:8px 10px;font-size:13.5px;"
+                />
+              </div>
+            </div>
+
+            <!-- Quick Translator Count Presets -->
+            <div id="splitPresetRow" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+              <button type="button" class="split-preset-pill" data-count="2">2</button>
+              <button type="button" class="split-preset-pill" data-count="3">3</button>
+              <button type="button" class="split-preset-pill" data-count="4">4</button>
+              <button type="button" class="split-preset-pill" data-count="5">5</button>
+              <button type="button" class="split-preset-pill" data-count="6">6</button>
+              <button type="button" class="split-preset-pill" data-count="8">8</button>
+              <button type="button" class="split-preset-pill" data-count="10">10</button>
+              <button type="button" class="split-preset-pill" data-count="15">15</button>
+              <button type="button" class="split-preset-pill" data-count="20">20</button>
+            </div>
+
+            <div id="splitError" class="hidden" style="color:#dc2626;font-size:12.5px;margin-bottom:10px;"></div>
+
+            <button type="button" id="calcSplitBtn" class="btn btn-primary" style="width:100%;justify-content:center;padding:9px 14px;font-size:13.5px;">Calculate</button>
+
+            <!-- Generated Output -->
+            <div id="splitResultBox" class="hidden" style="margin-top:12px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                <span id="splitSummaryBadge" style="font-size:12px;font-weight:600;color:#64748b;"></span>
+                <button type="button" id="copySplitBtn" class="btn btn-secondary btn-sm" style="padding:4px 10px;font-size:12px;">Copy</button>
+              </div>
+              <pre id="splitOutputText"></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Boards Reset -->
         <div id="settingsRecentRow" style="margin-bottom:18px;padding-top:14px;border-top:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;gap:12px;">
           <div>
             <div id="settingsRecentLabel" style="font-size:13px;font-weight:600;color:#334155;">Recent Boards</div>
@@ -666,6 +827,7 @@
           </div>
           <button type="button" id="settingsClearRecentBtn" class="btn btn-danger-outline btn-sm" style="white-space:nowrap;">Clear List</button>
         </div>
+
         <div style="display:flex;justify-content:flex-end;">
           <button type="button" id="doneSettingsBtn" class="btn btn-primary">Done</button>
         </div>
