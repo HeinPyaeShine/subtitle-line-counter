@@ -13,6 +13,7 @@ let records = [];
 let realtimeChannel = null;
 let currentSyncState = 'connecting';
 let currentLang = localStorage.getItem('hps_app_lang') === 'my' ? 'my' : 'en';
+let currentTheme = localStorage.getItem('hps_app_theme') === 'dark' ? 'dark' : 'light';
 
 // Translations (English & Burmese)
 const TRANSLATIONS = {
@@ -57,6 +58,11 @@ const TRANSLATIONS = {
     openBoardBtn: 'Open Board',
     settingsTitle: 'Settings',
     settingsDesc: 'Customize your Subtitle Line Counter preferences.',
+    settingsThemeLabel: 'Appearance',
+    themeLightTitle: 'Light Mode',
+    themeLightSub: 'Clean bright cards',
+    themeDarkTitle: 'Dark Mode',
+    themeDarkSub: 'Easy on eyes at night',
     settingsLangLabel: 'Language / ဘာသာစကား',
     doneBtn: 'Done',
     editModalTitle: 'Edit Record',
@@ -123,6 +129,11 @@ const TRANSLATIONS = {
     openBoardBtn: 'ဘုတ်ဖွင့်မည်',
     settingsTitle: 'ဆက်တင်များ',
     settingsDesc: 'Subtitle Line Counter အသုံးပြုမှု ပုံစံကို စိတ်ကြိုက်ပြင်ဆင်ပါ။',
+    settingsThemeLabel: 'အရောင်ပုံစံ (Theme)',
+    themeLightTitle: 'အလင်းရောင်စနစ် (Light)',
+    themeLightSub: 'နေ့ဘက် အသုံးပြုရန်',
+    themeDarkTitle: 'အမှောင်ရောင်စနစ် (Dark)',
+    themeDarkSub: 'ညဘက် မျက်စိသက်သာစေရန်',
     settingsLangLabel: 'Language / ဘာသာစကား',
     doneBtn: 'ပြီးပါပြီ',
     editModalTitle: 'မှတ်တမ်း ပြင်ဆင်ရန်',
@@ -217,7 +228,7 @@ const els = {
 };
 
 /* =========================================
-   Utilities & Language Switcher
+   Utilities, Theme & Language Switcher
    ========================================= */
 function escapeHtml(str) {
   const div = document.createElement('div');
@@ -244,6 +255,23 @@ function setSyncStatus(state, labelKey) {
   if (state === 'online') els.syncStatus.classList.add('is-online');
   if (state === 'error') els.syncStatus.classList.add('is-error');
   els.syncText.textContent = t(labelKey);
+}
+
+function applyTheme(theme) {
+  currentTheme = theme === 'dark' ? 'dark' : 'light';
+  localStorage.setItem('hps_app_theme', currentTheme);
+  document.body.classList.toggle('theme-dark', currentTheme === 'dark');
+
+  document.getElementById('themeLightBtn')?.classList.toggle('is-selected', currentTheme === 'light');
+  document.getElementById('themeDarkBtn')?.classList.toggle('is-selected', currentTheme === 'dark');
+
+  let metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (!metaTheme) {
+    metaTheme = document.createElement('meta');
+    metaTheme.name = 'theme-color';
+    document.head.appendChild(metaTheme);
+  }
+  metaTheme.content = currentTheme === 'dark' ? '#0b1120' : '#f8fafc';
 }
 
 function applyLanguage(lang) {
@@ -341,11 +369,23 @@ function applyLanguage(lang) {
   if (els.cancelRemoveAllBtn) els.cancelRemoveAllBtn.textContent = t('cancelBtn');
   if (els.confirmRemoveAllBtn) els.confirmRemoveAllBtn.textContent = t('confirmRemoveBtn');
 
-  // Settings Modal
+  // Settings Modal (Theme & Language)
   const sTitle = document.getElementById('settingsModalTitle');
   if (sTitle) sTitle.textContent = t('settingsTitle');
   const sDesc = document.getElementById('settingsModalDesc');
   if (sDesc) sDesc.textContent = t('settingsDesc');
+
+  const sThemeLabel = document.getElementById('settingsThemeLabel');
+  if (sThemeLabel) sThemeLabel.textContent = t('settingsThemeLabel');
+  const lightTitle = document.getElementById('themeLightTitle');
+  if (lightTitle) lightTitle.textContent = t('themeLightTitle');
+  const lightSub = document.getElementById('themeLightSub');
+  if (lightSub) lightSub.textContent = t('themeLightSub');
+  const darkTitle = document.getElementById('themeDarkTitle');
+  if (darkTitle) darkTitle.textContent = t('themeDarkTitle');
+  const darkSub = document.getElementById('themeDarkSub');
+  if (darkSub) darkSub.textContent = t('themeDarkSub');
+
   const sLangLabel = document.getElementById('settingsLangLabel');
   if (sLangLabel) sLangLabel.textContent = t('settingsLangLabel');
   const sDoneBtn = document.getElementById('doneSettingsBtn');
@@ -354,7 +394,6 @@ function applyLanguage(lang) {
   document.getElementById('langEnBtn')?.classList.toggle('is-selected', currentLang === 'en');
   document.getElementById('langMyBtn')?.classList.toggle('is-selected', currentLang === 'my');
 
-  // Re-render rows to update Edit / Delete button labels
   if (records.length > 0) {
     renderRecords();
   }
@@ -983,11 +1022,13 @@ if (shareBoardBtn) {
   });
 }
 
-// Settings Modal Events
+// Settings Modal Events (Theme & Language)
 const settingsBtn = document.getElementById('settingsBtn');
 const settingsModal = document.getElementById('settingsModal');
 const closeSettingsModalBtn = document.getElementById('closeSettingsModal');
 const doneSettingsBtn = document.getElementById('doneSettingsBtn');
+const themeLightBtn = document.getElementById('themeLightBtn');
+const themeDarkBtn = document.getElementById('themeDarkBtn');
 const langEnBtn = document.getElementById('langEnBtn');
 const langMyBtn = document.getElementById('langMyBtn');
 
@@ -1008,6 +1049,13 @@ if (settingsModal) {
   });
 }
 
+if (themeLightBtn) {
+  themeLightBtn.addEventListener('click', () => applyTheme('light'));
+}
+if (themeDarkBtn) {
+  themeDarkBtn.addEventListener('click', () => applyTheme('dark'));
+}
+
 if (langEnBtn) {
   langEnBtn.addEventListener('click', () => applyLanguage('en'));
 }
@@ -1025,7 +1073,8 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Apply saved language & start application
+// Apply saved theme & language, then start application
+applyTheme(currentTheme);
 applyLanguage(currentLang);
 initSupabase();
 if (initialUserState.isNewVisitor) {
