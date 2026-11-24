@@ -206,6 +206,7 @@ function t(key, ...args) {
   const val = dict[key] !== undefined ? dict[key] : TRANSLATIONS.en[key];
   return typeof val === 'function' ? val(...args) : val;
 }
+
 // Separate board per user
 function getInitialUserState() {
   const params = new URLSearchParams(window.location.search);
@@ -444,12 +445,11 @@ function applyLanguage(lang) {
   if (splitTransLbl) splitTransLbl.textContent = t('splitTranslatorsLabel');
   const calcSplit = document.getElementById('calcSplitBtn');
   if (calcSplit) calcSplit.textContent = t('calcSplitBtn');
+  const clearSplit = document.getElementById('clearSplitBtn');
+  if (clearSplit) clearSplit.textContent = t('clearListBtn');
   const copySplit = document.getElementById('copySplitBtn');
   if (copySplit) copySplit.textContent = t('copyBtn');
 
-  const clearSplit = document.getElementById('clearSplitBtn');
-  if (clearSplit) clearSplit.textContent = t('clearListBtn');
-  
   const sRecentLabel = document.getElementById('settingsRecentLabel');
   if (sRecentLabel) sRecentLabel.textContent = t('settingsRecentLabel');
   const sRecentDesc = document.getElementById('settingsRecentDesc');
@@ -1130,8 +1130,19 @@ const splitTranslatorsInput = document.getElementById('splitTranslatorsInput');
 const splitPresetRow = document.getElementById('splitPresetRow');
 const splitError = document.getElementById('splitError');
 const calcSplitBtn = document.getElementById('calcSplitBtn');
-
 const clearSplitBtn = document.getElementById('clearSplitBtn');
+const splitResultBox = document.getElementById('splitResultBox');
+const splitSummaryBadge = document.getElementById('splitSummaryBadge');
+const copySplitBtn = document.getElementById('copySplitBtn');
+const splitOutputText = document.getElementById('splitOutputText');
+
+function syncSplitPresetPills() {
+  if (!splitPresetRow || !splitTranslatorsInput) return;
+  const val = String(splitTranslatorsInput.value || '').trim();
+  splitPresetRow.querySelectorAll('.split-preset-pill').forEach((pill) => {
+    pill.classList.toggle('is-active', pill.dataset.count === val);
+  });
+}
 
 function clearLineSplit() {
   if (splitTotalLinesInput) splitTotalLinesInput.value = '';
@@ -1145,22 +1156,6 @@ function clearLineSplit() {
   if (splitSummaryBadge) splitSummaryBadge.textContent = '';
   if (splitResultBox) splitResultBox.classList.add('hidden');
   showToast(t('splitCleared'), 'success');
-}
-
-if (clearSplitBtn) {
-  clearSplitBtn.addEventListener('click', clearLineSplit);
-}
-const splitResultBox = document.getElementById('splitResultBox');
-const splitSummaryBadge = document.getElementById('splitSummaryBadge');
-const copySplitBtn = document.getElementById('copySplitBtn');
-const splitOutputText = document.getElementById('splitOutputText');
-
-function syncSplitPresetPills() {
-  if (!splitPresetRow || !splitTranslatorsInput) return;
-  const val = String(splitTranslatorsInput.value || '').trim();
-  splitPresetRow.querySelectorAll('.split-preset-pill').forEach((pill) => {
-    pill.classList.toggle('is-active', pill.dataset.count === val);
-  });
 }
 
 function calculateEqualLineSplit() {
@@ -1285,6 +1280,10 @@ if (splitTotalLinesInput) {
 
 if (calcSplitBtn) {
   calcSplitBtn.addEventListener('click', calculateEqualLineSplit);
+}
+
+if (clearSplitBtn) {
+  clearSplitBtn.addEventListener('click', clearLineSplit);
 }
 
 if (copySplitBtn) {
