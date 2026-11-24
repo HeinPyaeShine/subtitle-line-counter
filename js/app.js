@@ -78,6 +78,7 @@ const TRANSLATIONS = {
     splitInvalidTranslators: 'Please enter between 1 and 20 translators.',
     splitTooManyTranslators: 'Translators cannot exceed total lines.',
     splitCopied: 'Distribution list copied to clipboard!',
+    splitCleared: 'Line splitter cleared.',
     splitLoadedFromSrt: (n) => `Loaded ${n.toLocaleString()} lines from .SRT file.`,
     splitSummary: (total, count, avg) => `${total.toLocaleString()} lines ÷ ${count} (${avg} lines/each)`,
     settingsRecentLabel: 'Recent Boards',
@@ -168,6 +169,7 @@ const TRANSLATIONS = {
     splitInvalidTranslators: 'ဘာသာပြန်သူ အရေအတွက် ၁ မှ ၂၀ အတွင်း ထည့်သွင်းပါ။',
     splitTooManyTranslators: 'ဘာသာပြန်သူ အရေအတွက်သည် စုစုပေါင်းလိုင်းထက် မများရပါ။',
     splitCopied: 'လိုင်းခွဲဝေမှု စာရင်းကို ကူးယူပြီးပါပြီ!',
+    splitCleared: 'လိုင်းခွဲဝေမှု စာရင်း ရှင်းလင်းပြီးပါပြီ။',
     splitLoadedFromSrt: (n) => `.SRT ဖိုင်မှ လိုင်းပေါင်း ${n.toLocaleString()} ရယူပြီးပါပြီ။`,
     splitSummary: (total, count, avg) => `စုစုပေါင်း ${total.toLocaleString()} လိုင်း ÷ ${count} ဦး (တစ်ဦးလျှင် ~${avg} လိုင်း)`,
     settingsRecentLabel: 'မကြာသေးမီက ဘုတ်များ',
@@ -445,6 +447,9 @@ function applyLanguage(lang) {
   const copySplit = document.getElementById('copySplitBtn');
   if (copySplit) copySplit.textContent = t('copyBtn');
 
+  const clearSplit = document.getElementById('clearSplitBtn');
+  if (clearSplit) clearSplit.textContent = t('clearListBtn');
+  
   const sRecentLabel = document.getElementById('settingsRecentLabel');
   if (sRecentLabel) sRecentLabel.textContent = t('settingsRecentLabel');
   const sRecentDesc = document.getElementById('settingsRecentDesc');
@@ -1125,6 +1130,26 @@ const splitTranslatorsInput = document.getElementById('splitTranslatorsInput');
 const splitPresetRow = document.getElementById('splitPresetRow');
 const splitError = document.getElementById('splitError');
 const calcSplitBtn = document.getElementById('calcSplitBtn');
+
+const clearSplitBtn = document.getElementById('clearSplitBtn');
+
+function clearLineSplit() {
+  if (splitTotalLinesInput) splitTotalLinesInput.value = '';
+  if (splitTranslatorsInput) splitTranslatorsInput.value = '';
+  syncSplitPresetPills();
+  if (splitError) {
+    splitError.textContent = '';
+    splitError.classList.add('hidden');
+  }
+  if (splitOutputText) splitOutputText.textContent = '';
+  if (splitSummaryBadge) splitSummaryBadge.textContent = '';
+  if (splitResultBox) splitResultBox.classList.add('hidden');
+  showToast(t('splitCleared'), 'success');
+}
+
+if (clearSplitBtn) {
+  clearSplitBtn.addEventListener('click', clearLineSplit);
+}
 const splitResultBox = document.getElementById('splitResultBox');
 const splitSummaryBadge = document.getElementById('splitSummaryBadge');
 const copySplitBtn = document.getElementById('copySplitBtn');
