@@ -35,6 +35,8 @@ const TRANSLATIONS = {
     batchPlaceholder: 'e.g. Tank Chair Ep7 1-52, etc...',
     addRecordsBtn: 'Add Records',
     uploadSrtBtn: 'Upload .SRT',
+    uploadFolderBtn: 'Upload Folder',
+    noSrtInFolder: 'No .srt files found inside that folder.',
     helperNoteHtml:
       'Inclusive count supported automatically (e.g. <code>1-52 = 52</code>, <code>131-195 = 65</code>, <code>96-40 = 57</code>). Press <code>Add Records</code> or <code>Upload .SRT</code> to submit.',
     recordsHeading: 'Subtitle Records',
@@ -126,6 +128,8 @@ const TRANSLATIONS = {
     batchPlaceholder: 'ဥပမာ - Tank Chair Ep7 1-52 စသည်ဖြင့်...',
     addRecordsBtn: 'မှတ်တမ်းထည့်မည်',
     uploadSrtBtn: '.SRT ဖိုင်တင်မည်',
+    uploadFolderBtn: 'ဖိုင်တွဲ (Folder) တင်မည်',
+    noSrtInFolder: 'ရွေးချယ်ထားသော ဖိုင်တွဲအတွင်း .srt ဖိုင် မတွေ့ပါ။',
     helperNoteHtml:
       'အစ-အဆုံး လိုင်းအရေအတွက်ကို အလိုအလျောက် တွက်ချက်ပေးပါသည် (ဥပမာ <code>1-52 = 52</code>, <code>131-195 = 65</code>, <code>96-40 = 57</code>)။ ထည့်သွင်းရန် <code>မှတ်တမ်းထည့်မည်</code> သို့မဟုတ် <code>.SRT ဖိုင်တင်မည်</code> ကို နှိပ်ပါ။',
     recordsHeading: 'စာတန်းထိုး မှတ်တမ်းများ',
@@ -236,6 +240,8 @@ const els = {
   addBtn: document.getElementById('addBtn'),
   srtFileInput: document.getElementById('srtFileInput'),
   uploadSrtBtn: document.getElementById('uploadSrtBtn'),
+  folderFileInput: document.getElementById('folderFileInput'),
+  uploadFolderBtn: document.getElementById('uploadFolderBtn'),
   formError: document.getElementById('formError'),
   copyListBtn: document.getElementById('copyListBtn'),
   exportTxtBtn: document.getElementById('exportTxtBtn'),
@@ -359,6 +365,8 @@ function applyLanguage(lang) {
   if (addBtnSpan) addBtnSpan.textContent = t('addRecordsBtn');
   const uploadBtnSpan = els.uploadSrtBtn?.querySelector('span');
   if (uploadBtnSpan) uploadBtnSpan.textContent = t('uploadSrtBtn');
+  const folderBtnSpan = els.uploadFolderBtn?.querySelector('span');
+  if (folderBtnSpan) folderBtnSpan.textContent = t('uploadFolderBtn');
 
   const helperNote = document.querySelector('.helper-note');
   if (helperNote) helperNote.innerHTML = t('helperNoteHtml');
@@ -853,9 +861,10 @@ function handleExportTxt() {
 }
 
 /* =========================================
-   SRT Upload & Event Listeners
+   SRT File & Folder Upload
    ========================================= */
 async function handleSrtFilesSelected(event) {
+  const isFolderUpload = event.target === els.folderFileInput;
   const files = Array.from(event.target.files || []);
   event.target.value = '';
   if (files.length === 0) return;
@@ -866,64 +875,142 @@ async function handleSrtFilesSelected(event) {
     return;
   }
 
-  els.uploadSrtBtn.disabled = true;
+  const activeBtn = isFolderUpload ? els.uploadFolderBtn : els.uploadSrtBtn;
+  const activeSpan = activeBtn?.querySelector('span');
 
-  const existingKeys = new Set(records.map(buildDuplicateKey));
-  const batchKeys = new Set();
-  const validRecords = [];
-  const errors = [];
-
-  for (const file of files) {
-    const content = await file.text();
-    const result = parseSrtFile(file.name, content);
-
-    if (!result.valid) {
-      errors.push(result.error);
-      continue;
-    }
-
-    const key = buildDuplicateKey(result.record);
-    if (existingKeys.has(key)) {
-      errors.push(`Duplicate skipped: "${formatRecordLine(result.record)}" already exists.`);
-      continue;
-    }
-    if (batchKeys.has(key)) {
-      errors.push(`Duplicate file skipped: "${file.name}".`);
-      continue;
-    }
-
-    batchKeys.add(key);
-    validRecords.push(result.record);
+  if (els.uploadSrtBtn) els.uploadSrtBtn.disabled = true;
+  if (els.uploadFolderBtn) els.uploadFolderBtn.disabled = true;
+  if (activeSpan) {
+    activeSpan.textContent = currentLang === 'my' ? 'ဖိုင်များ ဖတ်နေသည်...' : 'Reading files...';
   }
 
-  if (validRecords.length > 0) {
-    const { data, error } = await supabaseClient
-      .from('subtitle_records')
-      .insert(validRecords.map((r) => ({ ...r, owner: currentPlayer })))
-      .select();
+  try {
+    const existingKeys = new Set(records.map(buildDuplicateKey));
+    const batchKeys = new Set();
+    const validRecords = [];
+    const errors = [];
+    const srtItems = [];
 
-    if (error) {
-      console.error('SRT insert error:', error);
-      errors.push(t('srtSaveFailed'));
-    } else if (data && data.length > 0) {
+    // Collect .srt files from individual picks or an entire folder
+    for (const file of files) {
+      const lowerName = file.name.toLowerCase();
+      const relPath = file.webkitRelativePath || '';
+
+      // Skip hidden system files inside folders
+      if (file.name.startsWith('.') || relPath.includes('__MACOSX')) continue;
+
+      if (!lowerName.endsWith('.srt')) {
+        // When scanning a mixed folder like Telegram, silently ignore images/videos/other files
+        if (!isFolderUpload) {
+          errors.push(`Skipped "${file.name}": only .srt files are supported.`);
+        }
+        continue;
+      }
+
+      const content = await file.text();
+      srtItems.push({ name: file.name, content });
+    }
+
+    if (isFolderUpload && srtItems.length === 0) {
+      errors.push(t('noSrtInFolder'));
+    }
+
+    // Parse and validate every collected .srt file
+    for (const item of srtItems) {
+      const result = parseSrtFile(item.name, item.content);
+
+      if (!result.valid) {
+        errors.push(result.error);
+        continue;
+      }
+
+      const key = buildDuplicateKey(result.record);
+      if (existingKeys.has(key)) {
+        errors.push(`Duplicate skipped: "${formatRecordLine(result.record)}" already exists.`);
+        continue;
+      }
+      if (batchKeys.has(key)) {
+        errors.push(`Duplicate file skipped: "${item.name}".`);
+        continue;
+      }
+
+      batchKeys.add(key);
+      validRecords.push(result.record);
+    }
+
+    // Save to Supabase in batches of 50 with live progress
+    if (validRecords.length > 0) {
       const existingIds = new Set(records.map((r) => r.id));
-      data.forEach((item) => {
-        if (!existingIds.has(item.id)) records.push(item);
-      });
-      renderRecords();
-      showToast(t('srtAdded', data.length), 'success');
+      let savedCount = 0;
+      const CHUNK_SIZE = 50;
+
+      for (let i = 0; i < validRecords.length; i += CHUNK_SIZE) {
+        const chunk = validRecords
+          .slice(i, i + CHUNK_SIZE)
+          .map((r) => ({ ...r, owner: currentPlayer }));
+
+        if (activeSpan) {
+          const done = Math.min(i + CHUNK_SIZE, validRecords.length);
+          activeSpan.textContent = `${done} / ${validRecords.length}...`;
+        }
+
+        const { data, error } = await supabaseClient
+          .from('subtitle_records')
+          .insert(chunk)
+          .select();
+
+        if (error) {
+          console.error('SRT insert error:', error);
+          errors.push(t('srtSaveFailed'));
+          break;
+        }
+
+        if (data && data.length > 0) {
+          data.forEach((row) => {
+            if (!existingIds.has(row.id)) {
+              existingIds.add(row.id);
+              records.push(row);
+              savedCount++;
+            }
+          });
+        }
+      }
+
+      if (savedCount > 0) {
+        renderRecords();
+        showToast(t('srtAdded', savedCount), 'success');
+      }
+    }
+
+    if (errors.length > 0) {
+      showFormError(errors);
+    }
+  } finally {
+    if (els.uploadSrtBtn) {
+      els.uploadSrtBtn.disabled = false;
+      const s = els.uploadSrtBtn.querySelector('span');
+      if (s) s.textContent = t('uploadSrtBtn');
+    }
+    if (els.uploadFolderBtn) {
+      els.uploadFolderBtn.disabled = false;
+      const f = els.uploadFolderBtn.querySelector('span');
+      if (f) f.textContent = t('uploadFolderBtn');
     }
   }
-
-  if (errors.length > 0) {
-    showFormError(errors);
-  }
-
-  els.uploadSrtBtn.disabled = false;
 }
 
-els.uploadSrtBtn.addEventListener('click', () => els.srtFileInput.click());
+if (els.srtFileInput) els.srtFileInput.multiple = true;
+els.uploadSrtBtn.addEventListener('click', () => {
+  els.srtFileInput.multiple = true;
+  els.srtFileInput.click();
+});
 els.srtFileInput.addEventListener('change', handleSrtFilesSelected);
+
+if (els.uploadFolderBtn && els.folderFileInput) {
+  els.uploadFolderBtn.addEventListener('click', () => els.folderFileInput.click());
+  els.folderFileInput.addEventListener('change', handleSrtFilesSelected);
+}
+
 els.recordForm.addEventListener('submit', handleAddSubmit);
 els.copyListBtn.addEventListener('click', handleCopyList);
 els.exportTxtBtn.addEventListener('click', handleExportTxt);
