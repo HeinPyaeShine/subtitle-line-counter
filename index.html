@@ -40,6 +40,13 @@
         <div style="display:flex;align-items:center;gap:8px;">
           <button type="button" id="switchPlayerBtn" class="btn btn-secondary" style="padding:6px 12px;font-size:13px;">Switch User</button>
           <button type="button" id="shareBoardBtn" class="btn btn-secondary" style="padding:6px 12px;font-size:13px;">Share My Link</button>
+          <button type="button" id="settingsBtn" class="btn btn-secondary" style="padding:6px 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px;">
+         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+           <circle cx="12" cy="12" r="3" />
+           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+         </svg>
+         <span id="settingsBtnText">Settings</span>
+       </button>
         </div>
       </div>
     <!-- Grand Total Banner (Always Prominent) -->
@@ -313,6 +320,93 @@
         </form>
       </div>
     </div>
+  <!-- Settings Modal -->
+ <style>
+   body.lang-my {
+     font-family: 'Pyidaungsu', 'Noto Sans Myanmar', system-ui, -apple-system, sans-serif;
+     line-height: 1.55;
+   }
+   #settingsModal {
+     position: fixed;
+     inset: 0;
+     background: rgba(15, 23, 42, 0.55);
+     backdrop-filter: blur(4px);
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     padding: 16px;
+     z-index: 1000;
+   }
+   #settingsModal.hidden {
+     display: none !important;
+   }
+   .lang-option-grid {
+     display: grid;
+     grid-template-columns: 1fr 1fr;
+     gap: 10px;
+     margin-top: 8px;
+   }
+   .lang-option-btn {
+     display: flex;
+     flex-direction: column;
+     align-items: flex-start;
+     gap: 2px;
+     padding: 12px 14px;
+     border-radius: 12px;
+     border: 1.5px solid #e2e8f0;
+     background: #f8fafc;
+     color: #0f172a;
+     cursor: pointer;
+     text-align: left;
+     transition: all 0.15s ease;
+   }
+   .lang-option-btn:hover {
+     border-color: #cbd5e1;
+     background: #f1f5f9;
+   }
+   .lang-option-btn.is-selected {
+     border-color: #16a34a;
+     background: #f0fdf4;
+     box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+   }
+   .lang-option-title {
+     font-size: 14px;
+     font-weight: 700;
+     color: #0f172a;
+   }
+   .lang-option-sub {
+     font-size: 12px;
+     color: #64748b;
+   }
+ </style>
+
+ <div id="settingsModal" class="hidden" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
+   <div class="user-modal-card">
+     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+       <h2 id="settingsModalTitle" style="margin:0;font-size:18px;font-weight:700;color:#0f172a;">Settings</h2>
+       <button type="button" id="closeSettingsModal" aria-label="Close" style="background:none;border:none;font-size:22px;line-height:1;color:#64748b;cursor:pointer;padding:4px;">×</button>
+     </div>
+     <p id="settingsModalDesc" style="margin:0 0 16px;font-size:13.5px;color:#64748b;">Customize your Subtitle Line Counter preferences.</p>
+
+     <div style="margin-bottom:18px;">
+       <div id="settingsLangLabel" style="font-size:13px;font-weight:600;color:#334155;">Language / ဘာသာစကား</div>
+       <div class="lang-option-grid">
+         <button type="button" id="langEnBtn" class="lang-option-btn is-selected" data-lang="en">
+           <span class="lang-option-title">English</span>
+           <span class="lang-option-sub">Default interface</span>
+         </button>
+         <button type="button" id="langMyBtn" class="lang-option-btn" data-lang="my">
+           <span class="lang-option-title">မြန်မာ (Burmese)</span>
+           <span class="lang-option-sub">မြန်မာဘာသာ အသုံးပြုရန်</span>
+         </button>
+       </div>
+     </div>
+
+     <div style="display:flex;justify-content:flex-end;">
+       <button type="button" id="doneSettingsBtn" class="btn btn-primary">Done</button>
+     </div>
+   </div>
+ </div>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
