@@ -463,7 +463,7 @@ function renderUserGuide() {
 
     <div class="guide-owner-box">
       <div>
-        <div style="font-size:11px;color:#15803d;font-weight:600;">Owner of this App</div>
+        <div style="font-size:11px;color:#15803d;font-weight:600;">App Owner & Dev</div>
         <div class="guide-owner-name">HeinPyaeShine</div>
       </div>
       <a href="https://t.me/hein_pyae_shine" target="_blank" rel="noopener noreferrer" class="guide-telegram-link">
