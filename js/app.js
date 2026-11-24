@@ -66,6 +66,20 @@ const TRANSLATIONS = {
     themeDarkTitle: 'Dark Mode',
     themeDarkSub: 'Easy on eyes at night',
     settingsLangLabel: 'Language / ဘာသာစကား',
+    settingsSrtLabel: 'SRT File Line Splitter',
+    settingsSrtDesc: 'Divide movie lines equally for translators',
+    srtFileBtn: 'SRT File',
+    splitTotalLabel: 'Total Lines',
+    splitFromSrtBtn: 'From .SRT',
+    splitTranslatorsLabel: 'Translators (1–20)',
+    calcSplitBtn: 'Calculate',
+    copyBtn: 'Copy',
+    splitInvalidTotal: 'Please enter a valid total line count (1 or more).',
+    splitInvalidTranslators: 'Please enter between 1 and 20 translators.',
+    splitTooManyTranslators: 'Translators cannot exceed total lines.',
+    splitCopied: 'Distribution list copied to clipboard!',
+    splitLoadedFromSrt: (n) => `Loaded ${n.toLocaleString()} lines from .SRT file.`,
+    splitSummary: (total, count, avg) => `${total.toLocaleString()} lines ÷ ${count} (${avg} lines/each)`,
     settingsRecentLabel: 'Recent Boards',
     settingsRecentDesc: 'Clear saved quick-switch chips',
     doneBtn: 'Done',
@@ -137,11 +151,25 @@ const TRANSLATIONS = {
     settingsTitle: 'ဆက်တင်များ',
     settingsDesc: 'Subtitle Line Counter အသုံးပြုမှု ပုံစံကို စိတ်ကြိုက်ပြင်ဆင်ပါ။',
     settingsThemeLabel: 'အရောင်ပုံစံ (Theme)',
-    themeLightTitle: 'အလင်းစနစ် (Light)',
+    themeLightTitle: 'အလင်းရောင်စနစ် (Light)',
     themeLightSub: 'နေ့ဘက် အသုံးပြုရန်',
-    themeDarkTitle: 'အမှောင်စနစ် (Dark)',
+    themeDarkTitle: 'အမှောင်ရောင်စနစ် (Dark)',
     themeDarkSub: 'ညဘက် မျက်စိသက်သာစေရန်',
     settingsLangLabel: 'Language / ဘာသာစကား',
+    settingsSrtLabel: 'SRT ဖိုင် လိုင်းခွဲဝေရန်',
+    settingsSrtDesc: 'ရုပ်ရှင်စာတန်းလိုင်းများကို ဘာသာပြန်သူများထံ အညီအမျှခွဲဝေရန်',
+    srtFileBtn: 'SRT ဖိုင်',
+    splitTotalLabel: 'စုစုပေါင်း လိုင်း',
+    splitFromSrtBtn: '.SRT မှယူမည်',
+    splitTranslatorsLabel: 'ဘာသာပြန်သူ (၁–၂၀)',
+    calcSplitBtn: 'တွက်ချက်မည်',
+    copyBtn: 'ကူးယူမည်',
+    splitInvalidTotal: 'စုစုပေါင်း လိုင်းအရေအတွက် မှန်ကန်စွာ ထည့်သွင်းပါ (၁ နှင့်အထက်)။',
+    splitInvalidTranslators: 'ဘာသာပြန်သူ အရေအတွက် ၁ မှ ၂၀ အတွင်း ထည့်သွင်းပါ။',
+    splitTooManyTranslators: 'ဘာသာပြန်သူ အရေအတွက်သည် စုစုပေါင်းလိုင်းထက် မများရပါ။',
+    splitCopied: 'လိုင်းခွဲဝေမှု စာရင်းကို ကူးယူပြီးပါပြီ!',
+    splitLoadedFromSrt: (n) => `.SRT ဖိုင်မှ လိုင်းပေါင်း ${n.toLocaleString()} ရယူပြီးပါပြီ။`,
+    splitSummary: (total, count, avg) => `စုစုပေါင်း ${total.toLocaleString()} လိုင်း ÷ ${count} ဦး (တစ်ဦးလျှင် ~${avg} လိုင်း)`,
     settingsRecentLabel: 'မကြာသေးမီက ဘုတ်များ',
     settingsRecentDesc: 'အမြန်ပြောင်းရန် သိမ်းထားသော အမည်များကို ဖျက်မည်',
     doneBtn: 'ပြီးပါပြီ',
@@ -381,7 +409,7 @@ function applyLanguage(lang) {
   if (els.cancelRemoveAllBtn) els.cancelRemoveAllBtn.textContent = t('cancelBtn');
   if (els.confirmRemoveAllBtn) els.confirmRemoveAllBtn.textContent = t('confirmRemoveBtn');
 
-  // Settings Modal (Theme, Language & Recent Boards)
+  // Settings Modal (Theme, Language, SRT Splitter & Recent Boards)
   const sTitle = document.getElementById('settingsModalTitle');
   if (sTitle) sTitle.textContent = t('settingsTitle');
   const sDesc = document.getElementById('settingsModalDesc');
@@ -400,6 +428,23 @@ function applyLanguage(lang) {
 
   const sLangLabel = document.getElementById('settingsLangLabel');
   if (sLangLabel) sLangLabel.textContent = t('settingsLangLabel');
+
+  const sSrtLabel = document.getElementById('settingsSrtLabel');
+  if (sSrtLabel) sSrtLabel.textContent = t('settingsSrtLabel');
+  const sSrtDesc = document.getElementById('settingsSrtDesc');
+  if (sSrtDesc) sSrtDesc.textContent = t('settingsSrtDesc');
+  const toggleSrtText = document.getElementById('toggleSrtSplitterText');
+  if (toggleSrtText) toggleSrtText.textContent = t('srtFileBtn');
+  const splitTotalLbl = document.getElementById('splitTotalLabel');
+  if (splitTotalLbl) splitTotalLbl.textContent = t('splitTotalLabel');
+  const splitFromSrt = document.getElementById('splitLoadSrtBtn');
+  if (splitFromSrt) splitFromSrt.textContent = t('splitFromSrtBtn');
+  const splitTransLbl = document.getElementById('splitTranslatorsLabel');
+  if (splitTransLbl) splitTransLbl.textContent = t('splitTranslatorsLabel');
+  const calcSplit = document.getElementById('calcSplitBtn');
+  if (calcSplit) calcSplit.textContent = t('calcSplitBtn');
+  const copySplit = document.getElementById('copySplitBtn');
+  if (copySplit) copySplit.textContent = t('copyBtn');
 
   const sRecentLabel = document.getElementById('settingsRecentLabel');
   if (sRecentLabel) sRecentLabel.textContent = t('settingsRecentLabel');
@@ -758,23 +803,25 @@ function buildFormattedReport() {
   return ['SUBTITLE RECORDS', ...lines, `TOTAL = ${grandTotal}`].join('\n');
 }
 
+async function copyTextToClipboard(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+  } else {
+    const tempArea = document.createElement('textarea');
+    tempArea.value = text;
+    tempArea.style.position = 'fixed';
+    tempArea.style.opacity = '0';
+    document.body.appendChild(tempArea);
+    tempArea.select();
+    document.execCommand('copy');
+    tempArea.remove();
+  }
+}
+
 async function handleCopyList() {
   if (records.length === 0) return;
-  const text = buildFormattedReport();
-
   try {
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(text);
-    } else {
-      const tempArea = document.createElement('textarea');
-      tempArea.value = text;
-      tempArea.style.position = 'fixed';
-      tempArea.style.opacity = '0';
-      document.body.appendChild(tempArea);
-      tempArea.select();
-      document.execCommand('copy');
-      tempArea.remove();
-    }
+    await copyTextToClipboard(buildFormattedReport());
     showToast(t('listCopied'), 'success');
   } catch (err) {
     console.error('Clipboard copy error:', err);
@@ -1051,7 +1098,7 @@ if (shareBoardBtn) {
     const url = new URL(window.location.origin + window.location.pathname);
     url.searchParams.set('user', currentPlayer);
     try {
-      await navigator.clipboard.writeText(url.toString());
+      await copyTextToClipboard(url.toString());
       showToast(t('copiedLink', currentPlayer), 'success');
     } catch {
       showToast(`Link: ${url.toString()}`, 'default');
@@ -1059,7 +1106,7 @@ if (shareBoardBtn) {
   });
 }
 
-// Settings Modal Events (Theme, Language & Reset)
+// Settings Modal Events (Theme, Language, SRT Line Splitter & Reset)
 const settingsBtn = document.getElementById('settingsBtn');
 const settingsModal = document.getElementById('settingsModal');
 const closeSettingsModalBtn = document.getElementById('closeSettingsModal');
@@ -1068,6 +1115,166 @@ const themeLightBtn = document.getElementById('themeLightBtn');
 const themeDarkBtn = document.getElementById('themeDarkBtn');
 const langEnBtn = document.getElementById('langEnBtn');
 const langMyBtn = document.getElementById('langMyBtn');
+
+// SRT File Line Splitter Elements
+const toggleSrtSplitterBtn = document.getElementById('toggleSrtSplitterBtn');
+const srtSplitterPanel = document.getElementById('srtSplitterPanel');
+const splitTotalLinesInput = document.getElementById('splitTotalLinesInput');
+const splitLoadSrtBtn = document.getElementById('splitLoadSrtBtn');
+const splitLoadSrtInput = document.getElementById('splitLoadSrtInput');
+const splitTranslatorsInput = document.getElementById('splitTranslatorsInput');
+const splitPresetRow = document.getElementById('splitPresetRow');
+const splitError = document.getElementById('splitError');
+const calcSplitBtn = document.getElementById('calcSplitBtn');
+const splitResultBox = document.getElementById('splitResultBox');
+const splitSummaryBadge = document.getElementById('splitSummaryBadge');
+const copySplitBtn = document.getElementById('copySplitBtn');
+const splitOutputText = document.getElementById('splitOutputText');
+
+function syncSplitPresetPills() {
+  if (!splitPresetRow || !splitTranslatorsInput) return;
+  const val = String(splitTranslatorsInput.value || '').trim();
+  splitPresetRow.querySelectorAll('.split-preset-pill').forEach((pill) => {
+    pill.classList.toggle('is-active', pill.dataset.count === val);
+  });
+}
+
+function calculateEqualLineSplit() {
+  if (!splitTotalLinesInput || !splitTranslatorsInput) return;
+  splitError.classList.add('hidden');
+
+  const totalLines = Number(splitTotalLinesInput.value);
+  const translators = Number(splitTranslatorsInput.value);
+
+  if (!Number.isInteger(totalLines) || totalLines < 1) {
+    splitError.textContent = t('splitInvalidTotal');
+    splitError.classList.remove('hidden');
+    splitResultBox.classList.add('hidden');
+    splitTotalLinesInput.focus();
+    return;
+  }
+
+  if (!Number.isInteger(translators) || translators < 1 || translators > 20) {
+    splitError.textContent = t('splitInvalidTranslators');
+    splitError.classList.remove('hidden');
+    splitResultBox.classList.add('hidden');
+    splitTranslatorsInput.focus();
+    return;
+  }
+
+  if (translators > totalLines) {
+    splitError.textContent = t('splitTooManyTranslators');
+    splitError.classList.remove('hidden');
+    splitResultBox.classList.add('hidden');
+    splitTranslatorsInput.focus();
+    return;
+  }
+
+  const baseCount = Math.floor(totalLines / translators);
+  const remainder = totalLines % translators;
+  const rows = [];
+  let cursor = 1;
+
+  for (let i = 0; i < translators; i++) {
+    const share = baseCount + (i < remainder ? 1 : 0);
+    const start = cursor;
+    const end = cursor + share - 1;
+    const rangeLabel = `${start}-${end}`.padEnd(11, ' ');
+    rows.push(`${rangeLabel}@`);
+    cursor = end + 1;
+  }
+
+  const avgDisplay = remainder === 0 ? `${baseCount}` : `${baseCount}–${baseCount + 1}`;
+  splitSummaryBadge.textContent = t('splitSummary', totalLines, translators, avgDisplay);
+  splitOutputText.textContent = rows.join('\n');
+  splitResultBox.classList.remove('hidden');
+}
+
+if (toggleSrtSplitterBtn && srtSplitterPanel) {
+  toggleSrtSplitterBtn.addEventListener('click', () => {
+    const isHidden = srtSplitterPanel.classList.toggle('hidden');
+    if (!isHidden && splitTotalLinesInput) {
+      setTimeout(() => splitTotalLinesInput.focus(), 30);
+    }
+  });
+}
+
+if (splitLoadSrtBtn && splitLoadSrtInput) {
+  splitLoadSrtBtn.addEventListener('click', () => splitLoadSrtInput.click());
+  splitLoadSrtInput.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    const content = await file.text();
+    const parsed = parseSrtFile(file.name, content);
+    if (parsed.valid && parsed.record?.end_line) {
+      splitTotalLinesInput.value = parsed.record.end_line;
+      showToast(t('splitLoadedFromSrt', parsed.record.end_line), 'success');
+      if (splitTranslatorsInput.value) {
+        calculateEqualLineSplit();
+      } else {
+        splitTranslatorsInput.focus();
+      }
+    } else {
+      splitError.textContent = parsed.error || t('splitInvalidTotal');
+      splitError.classList.remove('hidden');
+    }
+  });
+}
+
+if (splitPresetRow) {
+  splitPresetRow.addEventListener('click', (e) => {
+    const pill = e.target.closest('.split-preset-pill');
+    if (!pill || !pill.dataset.count) return;
+    splitTranslatorsInput.value = pill.dataset.count;
+    syncSplitPresetPills();
+    if (splitTotalLinesInput.value) {
+      calculateEqualLineSplit();
+    } else {
+      splitTotalLinesInput.focus();
+    }
+  });
+}
+
+if (splitTranslatorsInput) {
+  splitTranslatorsInput.addEventListener('input', syncSplitPresetPills);
+  splitTranslatorsInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      calculateEqualLineSplit();
+    }
+  });
+}
+
+if (splitTotalLinesInput) {
+  splitTotalLinesInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (!splitTranslatorsInput.value) {
+        splitTranslatorsInput.focus();
+      } else {
+        calculateEqualLineSplit();
+      }
+    }
+  });
+}
+
+if (calcSplitBtn) {
+  calcSplitBtn.addEventListener('click', calculateEqualLineSplit);
+}
+
+if (copySplitBtn) {
+  copySplitBtn.addEventListener('click', async () => {
+    const text = splitOutputText?.textContent || '';
+    if (!text) return;
+    try {
+      await copyTextToClipboard(text);
+      showToast(t('splitCopied'), 'success');
+    } catch {
+      showToast(t('copyFailed'), 'error');
+    }
+  });
+}
 
 function openSettingsModal() {
   updateClearRecentButtons();
