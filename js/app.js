@@ -54,6 +54,8 @@ const TRANSLATIONS = {
     userNameLabel: 'User Name',
     userNamePlaceholder: 'e.g. HPS, Astral, Ryker',
     recentBoards: 'Recent Boards',
+    clearBtn: 'Clear',
+    clearListBtn: 'Clear List',
     cancelBtn: 'Cancel',
     openBoardBtn: 'Open Board',
     settingsTitle: 'Settings',
@@ -64,6 +66,8 @@ const TRANSLATIONS = {
     themeDarkTitle: 'Dark Mode',
     themeDarkSub: 'Easy on eyes at night',
     settingsLangLabel: 'Language / ဘာသာစကား',
+    settingsRecentLabel: 'Recent Boards',
+    settingsRecentDesc: 'Clear saved quick-switch chips',
     doneBtn: 'Done',
     editModalTitle: 'Edit Record',
     saveChangesBtn: 'Save Changes',
@@ -79,6 +83,7 @@ const TRANSLATIONS = {
     recordDeleted: 'Record deleted.',
     recordUpdated: 'Record updated.',
     allRemoved: 'All records removed.',
+    recentCleared: 'Recent boards cleared.',
     listCopied: 'Subtitle list copied to clipboard!',
     copyFailed: 'Could not copy to clipboard.',
     txtDownloaded: 'TXT file downloaded.',
@@ -125,6 +130,8 @@ const TRANSLATIONS = {
     userNameLabel: 'အသုံးပြုသူ အမည်',
     userNamePlaceholder: 'ဥပမာ - HPS, Astral, Ryker',
     recentBoards: 'မကြာသေးမီက ဖွင့်ခဲ့သော ဘုတ်များ',
+    clearBtn: 'ရှင်းလင်းမည်',
+    clearListBtn: 'စာရင်းရှင်းမည်',
     cancelBtn: 'မလုပ်တော့ပါ',
     openBoardBtn: 'ဘုတ်ဖွင့်မည်',
     settingsTitle: 'ဆက်တင်များ',
@@ -135,6 +142,8 @@ const TRANSLATIONS = {
     themeDarkTitle: 'အမှောင်ရောင်စနစ် (Dark)',
     themeDarkSub: 'ညဘက် မျက်စိသက်သာစေရန်',
     settingsLangLabel: 'Language / ဘာသာစကား',
+    settingsRecentLabel: 'မကြာသေးမီက ဘုတ်များ',
+    settingsRecentDesc: 'အမြန်ပြောင်းရန် သိမ်းထားသော အမည်များကို ဖျက်မည်',
     doneBtn: 'ပြီးပါပြီ',
     editModalTitle: 'မှတ်တမ်း ပြင်ဆင်ရန်',
     saveChangesBtn: 'ပြင်ဆင်မှု သိမ်းမည်',
@@ -150,6 +159,7 @@ const TRANSLATIONS = {
     recordDeleted: 'မှတ်တမ်း ဖျက်ပြီးပါပြီ။',
     recordUpdated: 'မှတ်တမ်း ပြင်ဆင်ပြီးပါပြီ။',
     allRemoved: 'မှတ်တမ်းအားလုံး ဖျက်ပြီးပါပြီ။',
+    recentCleared: 'မကြာသေးမီက ဘုတ်စာရင်း ရှင်းလင်းပြီးပါပြီ။',
     listCopied: 'စာတန်းထိုး စာရင်းကို ကူးယူပြီးပါပြီ!',
     copyFailed: 'စာရင်းကူးယူ၍ မရပါ။',
     txtDownloaded: 'TXT ဖိုင် ဒေါင်းလုဒ်ဆွဲပြီးပါပြီ။',
@@ -356,8 +366,10 @@ function applyLanguage(lang) {
   if (uLabel) uLabel.textContent = t('userNameLabel');
   const uInput = document.getElementById('userNameInput');
   if (uInput) uInput.placeholder = t('userNamePlaceholder');
-  const recentLabel = document.querySelector('#recentUsersSection > div:first-child');
+  const recentLabel = document.getElementById('recentBoardsLabel');
   if (recentLabel) recentLabel.textContent = t('recentBoards');
+  const clearRecentBtn = document.getElementById('clearRecentUsersBtn');
+  if (clearRecentBtn) clearRecentBtn.textContent = t('clearBtn');
   const cancelUserEl = document.getElementById('cancelUserBtn');
   if (cancelUserEl) cancelUserEl.textContent = t('cancelBtn');
   const openBoardEl = document.querySelector('#userForm button[type="submit"]');
@@ -369,7 +381,7 @@ function applyLanguage(lang) {
   if (els.cancelRemoveAllBtn) els.cancelRemoveAllBtn.textContent = t('cancelBtn');
   if (els.confirmRemoveAllBtn) els.confirmRemoveAllBtn.textContent = t('confirmRemoveBtn');
 
-  // Settings Modal (Theme & Language)
+  // Settings Modal (Theme, Language & Recent Boards)
   const sTitle = document.getElementById('settingsModalTitle');
   if (sTitle) sTitle.textContent = t('settingsTitle');
   const sDesc = document.getElementById('settingsModalDesc');
@@ -388,6 +400,14 @@ function applyLanguage(lang) {
 
   const sLangLabel = document.getElementById('settingsLangLabel');
   if (sLangLabel) sLangLabel.textContent = t('settingsLangLabel');
+
+  const sRecentLabel = document.getElementById('settingsRecentLabel');
+  if (sRecentLabel) sRecentLabel.textContent = t('settingsRecentLabel');
+  const sRecentDesc = document.getElementById('settingsRecentDesc');
+  if (sRecentDesc) sRecentDesc.textContent = t('settingsRecentDesc');
+  const sClearRecentBtn = document.getElementById('settingsClearRecentBtn');
+  if (sClearRecentBtn) sClearRecentBtn.textContent = t('clearListBtn');
+
   const sDoneBtn = document.getElementById('doneSettingsBtn');
   if (sDoneBtn) sDoneBtn.textContent = t('doneBtn');
 
@@ -900,6 +920,8 @@ const userNameInput = document.getElementById('userNameInput');
 const userError = document.getElementById('userError');
 const recentUsersSection = document.getElementById('recentUsersSection');
 const recentUsersList = document.getElementById('recentUsersList');
+const clearRecentUsersBtn = document.getElementById('clearRecentUsersBtn');
+const settingsClearRecentBtn = document.getElementById('settingsClearRecentBtn');
 const closeUserModalBtn = document.getElementById('closeUserModal');
 const cancelUserBtn = document.getElementById('cancelUserBtn');
 
@@ -912,10 +934,23 @@ function getRecentUsers() {
   }
 }
 
+function updateClearRecentButtons() {
+  const hasRecent = getRecentUsers().length > 0;
+  if (settingsClearRecentBtn) settingsClearRecentBtn.disabled = !hasRecent;
+}
+
 function saveRecentUser(name) {
   const list = getRecentUsers().filter((u) => u.toLowerCase() !== name.toLowerCase());
   list.unshift(name);
   localStorage.setItem('hps_recent_users', JSON.stringify(list.slice(0, 8)));
+  updateClearRecentButtons();
+}
+
+function clearRecentUsers() {
+  localStorage.setItem('hps_recent_users', JSON.stringify([]));
+  renderRecentUserChips();
+  updateClearRecentButtons();
+  showToast(t('recentCleared'), 'success');
 }
 
 saveRecentUser(currentPlayer);
@@ -1001,6 +1036,8 @@ if (recentUsersList) {
   });
 }
 
+if (clearRecentUsersBtn) clearRecentUsersBtn.addEventListener('click', clearRecentUsers);
+if (settingsClearRecentBtn) settingsClearRecentBtn.addEventListener('click', clearRecentUsers);
 if (closeUserModalBtn) closeUserModalBtn.addEventListener('click', closeUserModal);
 if (cancelUserBtn) cancelUserBtn.addEventListener('click', closeUserModal);
 if (userModal) {
@@ -1022,7 +1059,7 @@ if (shareBoardBtn) {
   });
 }
 
-// Settings Modal Events (Theme & Language)
+// Settings Modal Events (Theme, Language & Reset)
 const settingsBtn = document.getElementById('settingsBtn');
 const settingsModal = document.getElementById('settingsModal');
 const closeSettingsModalBtn = document.getElementById('closeSettingsModal');
@@ -1033,6 +1070,7 @@ const langEnBtn = document.getElementById('langEnBtn');
 const langMyBtn = document.getElementById('langMyBtn');
 
 function openSettingsModal() {
+  updateClearRecentButtons();
   if (settingsModal) settingsModal.classList.remove('hidden');
 }
 
