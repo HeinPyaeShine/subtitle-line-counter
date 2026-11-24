@@ -199,12 +199,11 @@ const TRANSLATIONS = {
   }
 };
 
-function t(key, arg) {
+function t(key, ...args) {
   const dict = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
   const val = dict[key] !== undefined ? dict[key] : TRANSLATIONS.en[key];
-  return typeof val === 'function' ? val(arg) : val;
+  return typeof val === 'function' ? val(...args) : val;
 }
-
 // Separate board per user
 function getInitialUserState() {
   const params = new URLSearchParams(window.location.search);
