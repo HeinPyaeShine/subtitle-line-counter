@@ -83,6 +83,9 @@ const TRANSLATIONS = {
     splitCleared: 'Line splitter cleared.',
     splitLoadedFromSrt: (n) => `Loaded ${n.toLocaleString()} lines from .SRT file.`,
     splitSummary: (total, count, avg) => `${total.toLocaleString()} lines ÷ ${count} (${avg} lines/each)`,
+    settingsGuideLabel: 'User Guide',
+    settingsGuideDesc: 'How to count lines, split SRTs & manage boards',
+    userGuideBtn: 'User Guide',
     settingsRecentLabel: 'Recent Boards',
     settingsRecentDesc: 'Clear saved quick-switch chips',
     doneBtn: 'Done',
@@ -176,6 +179,9 @@ const TRANSLATIONS = {
     splitCleared: 'လိုင်းခွဲဝေမှု စာရင်း ရှင်းလင်းပြီးပါပြီ။',
     splitLoadedFromSrt: (n) => `.SRT ဖိုင်မှ လိုင်းပေါင်း ${n.toLocaleString()} ရယူပြီးပါပြီ။`,
     splitSummary: (total, count, avg) => `စုစုပေါင်း ${total.toLocaleString()} လိုင်း ÷ ${count} ဦး (တစ်ဦးလျှင် ~${avg} လိုင်း)`,
+    settingsGuideLabel: 'အသုံးပြုနည်း လမ်းညွှန်',
+    settingsGuideDesc: 'လိုင်းတွက်ချက်နည်း၊ SRT ခွဲဝေနည်းနှင့် လုပ်ဆောင်ချက်များ',
+    userGuideBtn: 'လမ်းညွှန်',
     settingsRecentLabel: 'မကြာသေးမီက ဘုတ်များ',
     settingsRecentDesc: 'အမြန်ပြောင်းရန် သိမ်းထားသော အမည်များကို ဖျက်မည်',
     doneBtn: 'ပြီးပါပြီ',
@@ -320,6 +326,156 @@ function applyTheme(theme) {
   metaTheme.content = currentTheme === 'dark' ? '#0b1120' : '#f8fafc';
 }
 
+function renderUserGuide() {
+  const panel = document.getElementById('userGuidePanel');
+  if (!panel) return;
+
+  if (currentLang === 'my') {
+    panel.innerHTML = `
+      <div class="guide-card">
+        <div class="guide-card-header">
+          <span class="guide-card-title">၁။ စာတန်းလိုင်း တွက်ချက်နည်း (၃) နည်း</span>
+          <span class="guide-badge">အမြန်ဆုံး</span>
+        </div>
+        <div class="guide-card-body">
+          <ul>
+            <li><strong>ဖိုင်တွဲ (Folder) တင်မည် — အမြန်ဆုံးနည်းလမ်း:</strong> ဘာသာပြန်ပြီးသား <code>.srt</code> ဖိုင်အားလုံးကို ဖိုင်တွဲ (Folder) တစ်ခုတည်းထဲ စုသိမ်းထားပါ။ <strong>ဖိုင်တွဲ (Folder) တင်မည်</strong> ကို နှိပ်ပြီး ရွေးချယ်လိုက်ရုံဖြင့် တစ်ချက်တည်းဖြင့် ဖိုင်အားလုံးကို အလိုအလျောက် ရေတွက်ပေးပါမည်။ <em>(Android ဖုန်းများတွင် ပင်မ Telegram ဖိုင်တွဲကို ရွေးမရပါက အတွင်းရှိ Telegram Documents ဖိုင်တွဲကို ဝင်ရွေးပါ။)</em></li>
+            <li><strong>.SRT ဖိုင်တင်မည်:</strong> <strong>.SRT ဖိုင်တင်မည်</strong> ကို နှိပ်ပြီး ဖိုင် ၁ ဖိုင်၊ ၂ ဖိုင် သို့မဟုတ် အများအပြားကို စိတ်ကြိုက်ရွေးချယ် တင်နိုင်ပါသည်။</li>
+            <li><strong>ကိုယ်တိုင် ရိုက်ထည့်နည်း:</strong> ဇာတ်လမ်းအမည်၊ အပိုင်းနှင့် လိုင်းအပိုင်းအခြားကို <code>Tank Chair Ep7 1-52</code> ပုံစံအတိုင်း ရိုက်ထည့်နိုင်ပြီး တစ်ခုထက်ပိုပါက ကော်မာ <code>,</code> ခံ၍ ထည့်သွင်းနိုင်ပါသည်။</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-card-header">
+          <span class="guide-card-title">၂။ မှတ်တမ်းများ စီမံခြင်းနှင့် ကူးယူခြင်း</span>
+        </div>
+        <div class="guide-card-body">
+          <ul>
+            <li><strong>ပြင်ဆင်မည် / ဖျက်မည်:</strong> မှတ်တမ်းတစ်ခုချင်းစီ၏ ဇာတ်လမ်းအမည်၊ အပိုင်းနှင့် လိုင်းနံပါတ်များကို ပြန်လည်ပြင်ဆင်နိုင် သို့မဟုတ် ဖျက်နိုင်ပါသည်။</li>
+            <li><strong>စာရင်းကူးယူမည် / TXT ဖိုင်ထုတ်မည်:</strong> Telegram သို့မဟုတ် Messenger သို့ ပို့ရန် စုစုပေါင်းလိုင်းစာရင်းကို တစ်ချက်တည်း ကူးယူနိုင်သလို <code>.txt</code> ဖိုင်အဖြစ်လည်း ဒေါင်းလုဒ်ဆွဲနိုင်ပါသည်။</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-card-header">
+          <span class="guide-card-title">၃။ သီးခြား အသုံးပြုသူ ဘုတ်များ (Users Board)</span>
+        </div>
+        <div class="guide-card-body">
+          <ul>
+            <li><strong>အသုံးပြုသူ ပြောင်းရန်:</strong> ဘာသာပြန်သူ တစ်ဦးချင်းစီအတွက် သီးခြား မှတ်တမ်းဘုတ် ရှိပါသည်။ မိမိအမည်ကို ရိုက်ထည့်ပြီး ကိုယ်ပိုင်ဘုတ် ဖွင့်နိုင်ပါသည်။</li>
+            <li><strong>လင့်ခ် ကူးယူရန်:</strong> မိမိဘုတ်သို့ တိုက်ရိုက်ဝင်ရောက်နိုင်သော လင့်ခ်ကို ကူးယူပြီး သိမ်းဆည်းထားနိုင်ပါသည်။</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-card-header">
+          <span class="guide-card-title">၄။ SRT ဖိုင် လိုင်းခွဲဝေရန် (Admin Tool)</span>
+        </div>
+        <div class="guide-card-body">
+          ရုပ်ရှင် သို့မဟုတ် အပိုင်းတစ်ခု၏ စုစုပေါင်းစာတန်းလိုင်းကို ဘာသာပြန်သူ <strong>၁ ဦးမှ ၂၀ ဦး</strong> အထိ အညီအမျှ ခွဲဝေပေးနိုင်ပါသည်။ <strong>SRT ဖိုင်</strong> ကိုနှိပ်ပြီး စုစုပေါင်းလိုင်း (သို့မဟုတ် <code>.SRT မှယူမည်</code>) နှင့် လူဦးရေထည့်ကာ <strong>တွက်ချက်မည်</strong> ကိုနှိပ်ပါက <code>@</code> တပ်ပြီးသား စာရင်းကို အသင့်ကူးယူနိုင်ပါသည်။
+        </div>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-card-header">
+          <span class="guide-card-title">၅။ အရောင်ပုံစံ (Theme) နှင့် ဘာသာစကား</span>
+        </div>
+        <div class="guide-card-body">
+          ညဘက် မျက်စိသက်သာစေရန် <strong>Dark Mode</strong> နှင့် နေ့ဘက်အတွက် <strong>Light Mode</strong> ပြောင်းလဲနိုင်သလို <strong>English</strong> နှင့် <strong>မြန်မာဘာသာ</strong> အကြား စိတ်ကြိုက်ပြောင်းလဲ အသုံးပြုနိုင်ပါသည်။
+        </div>
+      </div>
+
+      <div class="guide-owner-box">
+        <div>
+          <div style="font-size:11px;color:#15803d;font-weight:600;">App Owner & Developer</div>
+          <div class="guide-owner-name">HeinPyaeShine</div>
+        </div>
+        <a href="https://t.me/hein_pyae_shine" target="_blank" rel="noopener noreferrer" class="guide-telegram-link">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+          </svg>
+          <span>@hein_pyae_shine</span>
+        </a>
+      </div>
+    `;
+    return;
+  }
+
+  panel.innerHTML = `
+    <div class="guide-card">
+      <div class="guide-card-header">
+        <span class="guide-card-title">1. Three Ways to Count Subtitle Lines</span>
+        <span class="guide-badge">FASTEST</span>
+      </div>
+      <div class="guide-card-body">
+        <ul>
+          <li><strong>Upload Folder (Fastest Way):</strong> Collect and save all your translated <code>.srt</code> files inside a single folder. Tap <strong>Upload Folder</strong> and select that folder to count and import every <code>.srt</code> file inside with <strong>1 tap</strong> (non-<code>.srt</code> files and duplicates are automatically skipped). <em>(Android tip: If "Use this folder" is disabled on a root folder like Telegram, open the subfolder inside it such as Telegram Documents.)</em></li>
+          <li><strong>Upload .SRT:</strong> Tap <strong>Upload .SRT</strong> to pick one, two, or multiple individual <code>.srt</code> files at once and batch-upload them together.</li>
+          <li><strong>Manual Batch Typing:</strong> Type the series name, episode, and line range directly—for example: <code>Tank Chair Ep7 1-52, Ep8 53-104</code> (separate multiple entries with commas <code>,</code>). Inclusive counts are calculated automatically.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="guide-card">
+      <div class="guide-card-header">
+        <span class="guide-card-title">2. Manage, Copy & Export Records</span>
+      </div>
+      <div class="guide-card-body">
+        <ul>
+          <li><strong>Edit / Delete:</strong> Update the series name, episode, or start/end lines of any saved row, or remove individual entries anytime.</li>
+          <li><strong>COPY LIST / Export TXT:</strong> Copy a clean formatted report with your grand total in one tap for Telegram/Messenger, or download a <code>.txt</code> backup file.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="guide-card">
+      <div class="guide-card-header">
+        <span class="guide-card-title">3. Separate User Boards & Share Link</span>
+      </div>
+      <div class="guide-card-body">
+        <ul>
+          <li><strong>Switch User:</strong> Each translator gets a separate board so records never mix. Enter any name to open their board, or tap a chip under <strong>Recent Boards</strong>.</li>
+          <li><strong>Share My Link:</strong> Copy a direct URL (<code>?user=...</code>) to open your personal board on any device.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="guide-card">
+      <div class="guide-card-header">
+        <span class="guide-card-title">4. SRT File Line Splitter (Admin Tool)</span>
+      </div>
+      <div class="guide-card-body">
+        Tap <strong>SRT File</strong> above in Settings to divide a movie's total lines equally among <strong>1 to 20 translators</strong>. Enter the total line count (or click <strong>From .SRT</strong>), choose the translator count, and tap <strong>Calculate</strong> to generate aligned <code>@</code> assignments ready to copy.
+      </div>
+    </div>
+
+    <div class="guide-card">
+      <div class="guide-card-header">
+        <span class="guide-card-title">5. Appearance & Language</span>
+      </div>
+      <div class="guide-card-body">
+        Switch between <strong>Light Mode</strong> and <strong>Dark Mode</strong> for comfortable reading day or night, and toggle the entire interface between <strong>English</strong> and <strong>မြန်မာ (Burmese)</strong>.
+      </div>
+    </div>
+
+    <div class="guide-owner-box">
+      <div>
+        <div style="font-size:11px;color:#15803d;font-weight:600;">Owner of this App</div>
+        <div class="guide-owner-name">HeinPyaeShine</div>
+      </div>
+      <a href="https://t.me/hein_pyae_shine" target="_blank" rel="noopener noreferrer" class="guide-telegram-link">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+        </svg>
+        <span>Telegram: @hein_pyae_shine</span>
+      </a>
+    </div>
+  `;
+}
+
 function applyLanguage(lang) {
   currentLang = lang === 'my' ? 'my' : 'en';
   localStorage.setItem('hps_app_lang', currentLang);
@@ -419,7 +575,7 @@ function applyLanguage(lang) {
   if (els.cancelRemoveAllBtn) els.cancelRemoveAllBtn.textContent = t('cancelBtn');
   if (els.confirmRemoveAllBtn) els.confirmRemoveAllBtn.textContent = t('confirmRemoveBtn');
 
-  // Settings Modal (Theme, Language, SRT Splitter & Recent Boards)
+  // Settings Modal (Theme, Language, SRT Splitter, User Guide & Recent Boards)
   const sTitle = document.getElementById('settingsModalTitle');
   if (sTitle) sTitle.textContent = t('settingsTitle');
   const sDesc = document.getElementById('settingsModalDesc');
@@ -457,6 +613,14 @@ function applyLanguage(lang) {
   if (clearSplit) clearSplit.textContent = t('clearListBtn');
   const copySplit = document.getElementById('copySplitBtn');
   if (copySplit) copySplit.textContent = t('copyBtn');
+
+  const sGuideLabel = document.getElementById('settingsGuideLabel');
+  if (sGuideLabel) sGuideLabel.textContent = t('settingsGuideLabel');
+  const sGuideDesc = document.getElementById('settingsGuideDesc');
+  if (sGuideDesc) sGuideDesc.textContent = t('settingsGuideDesc');
+  const toggleGuideText = document.getElementById('toggleUserGuideText');
+  if (toggleGuideText) toggleGuideText.textContent = t('userGuideBtn');
+  renderUserGuide();
 
   const sRecentLabel = document.getElementById('settingsRecentLabel');
   if (sRecentLabel) sRecentLabel.textContent = t('settingsRecentLabel');
@@ -1197,7 +1361,7 @@ if (shareBoardBtn) {
   });
 }
 
-// Settings Modal Events (Theme, Language, SRT Line Splitter & Reset)
+// Settings Modal Events (Theme, Language, SRT Line Splitter, User Guide & Reset)
 const settingsBtn = document.getElementById('settingsBtn');
 const settingsModal = document.getElementById('settingsModal');
 const closeSettingsModalBtn = document.getElementById('closeSettingsModal');
@@ -1206,6 +1370,19 @@ const themeLightBtn = document.getElementById('themeLightBtn');
 const themeDarkBtn = document.getElementById('themeDarkBtn');
 const langEnBtn = document.getElementById('langEnBtn');
 const langMyBtn = document.getElementById('langMyBtn');
+
+// User Guide Elements
+const toggleUserGuideBtn = document.getElementById('toggleUserGuideBtn');
+const userGuidePanel = document.getElementById('userGuidePanel');
+
+if (toggleUserGuideBtn && userGuidePanel) {
+  toggleUserGuideBtn.addEventListener('click', () => {
+    const isHidden = userGuidePanel.classList.toggle('hidden');
+    if (!isHidden) {
+      userGuidePanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  });
+}
 
 // SRT File Line Splitter Elements
 const toggleSrtSplitterBtn = document.getElementById('toggleSrtSplitterBtn');
