@@ -449,6 +449,96 @@
         user-select: all;
       }
 
+      /* User Guide Panel inside Settings */
+      #userGuidePanel {
+        margin-top: 12px;
+        padding: 14px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+      }
+      #userGuidePanel.hidden {
+        display: none !important;
+      }
+      .guide-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 11px 13px;
+        margin-bottom: 10px;
+      }
+      .guide-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 5px;
+      }
+      .guide-card-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #0f172a;
+      }
+      .guide-badge {
+        font-size: 10.5px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: #dcfce7;
+        color: #15803d;
+        white-space: nowrap;
+      }
+      .guide-card-body {
+        margin: 0;
+        font-size: 12.5px;
+        line-height: 1.55;
+        color: #475569;
+      }
+      .guide-card-body ul {
+        margin: 6px 0 0;
+        padding-left: 18px;
+      }
+      .guide-card-body li {
+        margin-bottom: 5px;
+      }
+      .guide-card-body li:last-child {
+        margin-bottom: 0;
+      }
+      .guide-owner-box {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 10px;
+        padding: 12px 13px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .guide-owner-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: #14532d;
+      }
+      .guide-telegram-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 11px;
+        border-radius: 999px;
+        background: #16a34a;
+        color: #ffffff !important;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: opacity 0.15s ease;
+      }
+      .guide-telegram-link:hover {
+        opacity: 0.9;
+      }
+
+
+      
       /* =========================================
          Professional Dark Slate Theme
          ========================================= */
@@ -647,6 +737,37 @@
         color: #f8fafc !important;
       }
 
+      body.theme-dark #settingsGuideSection {
+        border-top-color: #334155 !important;
+      }
+      body.theme-dark #settingsGuideLabel,
+      body.theme-dark .guide-card-title {
+        color: #f8fafc !important;
+      }
+      body.theme-dark #settingsGuideDesc,
+      body.theme-dark .guide-card-body {
+        color: #94a3b8 !important;
+      }
+      body.theme-dark #userGuidePanel {
+        background: #0f172a !important;
+        border-color: #334155 !important;
+      }
+      body.theme-dark .guide-card {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+      }
+      body.theme-dark .guide-badge {
+        background: rgba(34, 197, 94, 0.16) !important;
+        color: #4ade80 !important;
+      }
+      body.theme-dark .guide-owner-box {
+        background: rgba(22, 163, 74, 0.14) !important;
+        border-color: rgba(74, 222, 128, 0.35) !important;
+      }
+      body.theme-dark .guide-owner-name {
+        color: #86efac !important;
+      }
+
       body.theme-dark #clearRecentUsersBtn {
         color: #fca5a5 !important;
       }
@@ -830,6 +951,26 @@
           </div>
         </div>
 
+<!-- User Guide Section -->
+        <div id="settingsGuideSection" style="margin-bottom:16px;padding-top:14px;border-top:1px solid #e2e8f0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <div>
+              <div id="settingsGuideLabel" style="font-size:13px;font-weight:600;color:#334155;">User Guide</div>
+              <div id="settingsGuideDesc" style="font-size:12px;color:#64748b;">How to count lines, split SRTs & manage boards</div>
+            </div>
+            <button type="button" id="toggleUserGuideBtn" class="btn btn-secondary btn-sm" style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+              <span id="toggleUserGuideText">User Guide</span>
+            </button>
+          </div>
+
+          <div id="userGuidePanel" class="hidden"></div>
+        </div>
+        
         <!-- Recent Boards Reset -->
         <div id="settingsRecentRow" style="margin-bottom:18px;padding-top:14px;border-top:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;gap:12px;">
           <div>
